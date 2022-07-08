@@ -1,0 +1,7 @@
+/target
+/config.toml
+/.env
+/database.sqlite
+/database.sqlite-shm
+/database.sqlite-wal
+/extrachat.log

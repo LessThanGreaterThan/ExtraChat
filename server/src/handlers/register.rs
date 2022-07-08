@@ -1,0 +1,135 @@
+use std::sync::Arc;
+
+use anyhow::{Context, Result};
+use chrono::{DateTime, Duration, Utc};
+use lodestone_scraper::LodestoneScraper;
+use rand::RngCore;
+use tokio::sync::RwLock;
+
+use crate::{ClientState, RegisterRequest, RegisterResponse, State, util::{hash_key, send, world_from_id}, WsStream};
+
+pub async fn register(state: Arc<RwLock<State>>, _client_state: Arc<RwLock<ClientState>>, conn: &mut WsStream, number: u32, req: RegisterRequest) -> Result<()> {
+    let scraper = LodestoneScraper::default();
+
+    let world = world_from_id(req.world)
+        .context("invalid world id")?;
+
+    // look up character
+    let character = scraper.character_search()
+        .name(&req.name)
+        .world(world)
+        .send()
+        .await?
+        .results
+        .into_iter()
+        .find(|c| c.name == req.name && Some(c.world) == world_from_id(req.world))
+        .context("could not find character")?;
+    let lodestone_id = character.id as i64;
+
+    // get challenge
+    let challenge: Option<_> = sqlx::query!(
+            // language=sqlite
+            "select challenge, created_at from verifications where lodestone_id = ?",
+            lodestone_id,
+        )
+        .fetch_optional(&state.read().await.db)
+        .await
+        .context("could not query database for verification")?;
+
+    if !req.challenge_completed || challenge.is_none() {
+        let generate = match &challenge {
+            Some(r) if Utc::now().signed_duration_since(DateTime::<Utc>::from_utc(r.created_at, Utc)) > Duration::minutes(5) => {
+                // set up a challenge if one hasn't been set up in the last five minutes
+                true
+            }
+            Some(_) => {
+                // challenge already exists, send back existing one
+                false
+            }
+            None => true,
+        };
+
+        let challenge = match &challenge {
+            None | Some(_) if generate => {
+                let mut rand_bytes = [0; 32];
+                rand::thread_rng().fill_bytes(&mut rand_bytes);
+                let challenge = hex::encode(&rand_bytes);
+
+                sqlx::query!(
+                    // language=sqlite
+                    "delete from verifications where lodestone_id = ?",
+                    lodestone_id,
+                )
+                    .execute(&state.read().await.db)
+                    .await?;
+
+                sqlx::query!(
+                    // language=sqlite
+                    "insert into verifications (lodestone_id, challenge) values (?, ?)",
+                    lodestone_id,
+                    challenge,
+                )
+                    .execute(&state.read().await.db)
+                    .await?;
+
+                challenge
+            }
+            Some(r) => r.challenge.clone(),
+            None => unreachable!(),
+        };
+
+        send(conn, number, RegisterResponse::Challenge {
+            challenge,
+        }).await?;
+        return Ok(());
+    }
+
+    // verify challenge
+    let challenge = match challenge {
+        Some(c) => c,
+        // should not be possible
+        None => return Ok(()),
+    };
+
+    let chara_info = scraper.character(character.id)
+        .await
+        .context("could not get character info")?;
+    let verified = chara_info.profile_text.contains(&challenge.challenge);
+
+    if !verified {
+        send(conn, number, RegisterResponse::Failure).await?;
+        return Ok(());
+    }
+
+    sqlx::query!(
+        // language=sqlite
+        "delete from verifications where lodestone_id = ?",
+        lodestone_id,
+    )
+        .execute(&state.read().await.db)
+        .await
+        .context("could not remove verification")?;
+
+    let key = prefixed_api_key::generate("extrachat", None);
+    let hash = hash_key(&key);
+
+    let world_name = character.world.as_str();
+    sqlx::query!(
+        // language=sqlite
+        "insert or replace into users (lodestone_id, name, world, key_short, key_hash, last_updated) values (?, ?, ?, ?, ?, current_timestamp)",
+        lodestone_id,
+        character.name,
+        world_name,
+        key.short_token,
+        hash,
+    )
+        .execute(&state.read().await.db)
+        .await
+        .context("could not insert user")?;
+
+    send(conn, number, RegisterResponse::Success {
+        key: key.to_string().into(),
+    }).await?;
+
+    Ok(())
+}
