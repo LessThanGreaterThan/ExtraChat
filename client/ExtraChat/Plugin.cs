@@ -159,7 +159,7 @@ public class Plugin : IDalamudPlugin {
         }
 
         this.ChatGui.PrintChat(new XivChatEntry {
-            Type = XivChatType.SystemError,
+            Type = XivChatType.ErrorMessage,
             Message = message,
         });
     }
