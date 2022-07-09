@@ -1,0 +1,22 @@
+image: fedora/latest
+packages:
+  - dotnet
+  - wget
+  - unzip
+  - zip
+tasks:
+  - download-dalamud: |
+      mkdir dalamud
+      cd dalamud
+      wget https://github.com/goatcorp/dalamud-distrib/raw/main/latest.zip
+      unzip latest.zip
+      rm latest.zip
+  - build-plugin: |
+      cd ExtraChat/client/ExtraChat
+      dotnet build -c Release -p:IsCI=true
+  - package: |
+      cd ExtraChat/client/ExtraChat/bin/Release/net5.0-windows
+      zip -r release.zip ExtraChat
+artifacts:
+  - ExtraChat/client/ExtraChat/bin/Release/net5.0-windows/ExtraChat/latest.zip
+  - ExtraChat/client/ExtraChat/bin/Release/net5.0-windows/release.zip
