@@ -29,7 +29,9 @@ internal class Commands : IDisposable {
 
     private void RegisterMain() {
         foreach (var command in MainCommands) {
-            this.Plugin.CommandManager.AddHandler(command, new CommandInfo(this.MainCommand));
+            this.Plugin.CommandManager.AddHandler(command, new CommandInfo(this.MainCommand) {
+                HelpMessage = "Opens the main ExtraChat UI.",
+            });
         }
     }
 
