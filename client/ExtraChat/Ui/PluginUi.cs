@@ -123,10 +123,26 @@ internal class PluginUi : IDisposable {
                 ImGui.EndTabItem();
             }
 
+            if (ImGui.BeginTabItem("Help")) {
+                this.DrawHelp();
+                ImGui.EndTabItem();
+            }
+
             ImGui.EndTabBar();
         }
 
         ImGui.End();
+    }
+
+    private void DrawHelp() {
+        ImGui.PushTextWrapPos();
+
+        if (ImGui.Button("Reset tutorial")) {
+            this.Plugin.ConfigInfo.TutorialStep = 0;
+            this.Plugin.SaveConfig();
+        }
+
+        ImGui.PopTextWrapPos();
     }
 
     private void DrawSettings() {
@@ -434,6 +450,8 @@ internal class PluginUi : IDisposable {
     private string _rename = string.Empty;
 
     private void DrawList() {
+        var anyChanged = false;
+
         ImGui.PushFont(UiBuilder.IconFont);
 
         var syncButton = ImGui.CalcTextSize(FontAwesomeIcon.Sync.ToIconString()).X
@@ -450,11 +468,15 @@ internal class PluginUi : IDisposable {
             Task.Run(async () => await this.Plugin.Client.ListAll());
         }
 
+        anyChanged |= ImGuiUtil.Tutorial(this.Plugin, 1);
+
         ImGui.SameLine(addOffset);
 
         if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString())) {
             ImGui.OpenPopup("create-channel-popup");
         }
+
+        anyChanged |= ImGuiUtil.Tutorial(this.Plugin, 0);
 
         ImGui.PopFont();
 
@@ -480,8 +502,13 @@ internal class PluginUi : IDisposable {
             ImGui.EndPopup();
         }
 
+        if (this.Plugin.Client.Channels.Count == 0) {
+            ImGui.TextUnformatted("You aren't in any linkshells yet. Try creating or joining one first.");
+            goto AfterTable;
+        }
+
         if (ImGui.BeginTable("ecls-list", 2, ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit)) {
-            ImGui.TableSetupColumn("##channels", ImGuiTableColumnFlags.None);
+            ImGui.TableSetupColumn("##channels", ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableSetupColumn("##members", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableNextRow();
 
@@ -503,6 +530,7 @@ internal class PluginUi : IDisposable {
 
             if (ImGui.TableSetColumnIndex(0)) {
                 if (ImGui.BeginChild("channel-list", childSize)) {
+                    var first = true;
                     foreach (var id in orderedChannels) {
                         this.Plugin.ConfigInfo.Channels.TryGetValue(id, out var info);
                         var name = info?.Name ?? "???";
@@ -520,6 +548,12 @@ internal class PluginUi : IDisposable {
                             this._selectedChannel = id;
 
                             Task.Run(async () => await this.Plugin.Client.ListMembers(id));
+                        }
+
+                        if (first) {
+                            first = false;
+                            anyChanged |= ImGuiUtil.Tutorial(this.Plugin, 2);
+                            anyChanged |= ImGuiUtil.Tutorial(this.Plugin, 3);
                         }
 
                         if (ImGui.BeginPopupContextItem()) {
@@ -663,6 +697,7 @@ internal class PluginUi : IDisposable {
                         rank = Rank.Member;
                     }
 
+                    var first = true;
                     foreach (var member in channel.Members) {
                         if (!member.Online) {
                             ImGui.PushStyleColor(ImGuiCol.Text, disabledColour);
@@ -674,6 +709,12 @@ internal class PluginUi : IDisposable {
                             if (!member.Online) {
                                 ImGui.PopStyleColor();
                             }
+                        }
+
+                        if (first) {
+                            first = false;
+                            anyChanged |= ImGuiUtil.Tutorial(this.Plugin, 4);
+                            anyChanged |= ImGuiUtil.Tutorial(this.Plugin, 5);
                         }
 
                         if (ImGui.BeginPopupContextItem($"{this._selectedChannel}-{member.Name}@{member.World}-context")) {
@@ -733,6 +774,11 @@ internal class PluginUi : IDisposable {
             }
 
             ImGui.EndTable();
+        }
+
+        AfterTable:
+        if (anyChanged) {
+            this.Plugin.SaveConfig();
         }
     }
 }

@@ -40,6 +40,7 @@ internal class ConfigInfo {
     public Dictionary<Guid, ushort> ChannelColors = new();
     public Dictionary<Guid, string> ChannelMarkers = new();
     public Dictionary<Guid, XivChatType> ChannelChannels = new();
+    public int TutorialStep;
 
     internal string GetName(Guid id) => this.Channels.TryGetValue(id, out var channel)
         ? channel.Name
