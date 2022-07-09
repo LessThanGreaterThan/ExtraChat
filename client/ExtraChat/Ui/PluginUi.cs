@@ -508,7 +508,7 @@ internal class PluginUi : IDisposable {
         }
 
         if (ImGui.BeginTable("ecls-list", 2, ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit)) {
-            ImGui.TableSetupColumn("##channels", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn("##channels", ImGuiTableColumnFlags.WidthFixed, 125 * ImGuiHelpers.GlobalScale);
             ImGui.TableSetupColumn("##members", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableNextRow();
 
