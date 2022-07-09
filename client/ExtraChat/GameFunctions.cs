@@ -1,4 +1,6 @@
 ﻿using System.Text;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Hooking;
 using Dalamud.Logging;
 using Dalamud.Memory;
@@ -165,6 +167,16 @@ internal unsafe class GameFunctions : IDisposable {
         var sendTo = this.OverrideChannel;
 
         byte[]? toSend = null;
+        if (message->StringPtr[0] == 2) {
+            // check for autotranslate commands
+            var payload = Payload.Decode(new BinaryReader(new UnmanagedMemoryStream(message->StringPtr, message->BufSize)));
+            if (payload is AutoTranslatePayload at && at.Text[2..].StartsWith('/')) {
+                // there are no AT entries for custom commands, so we can just
+                // hand this back to the game
+                return true;
+            }
+        }
+
         if (message->StringPtr[0] == '/') {
             sendTo = Guid.Empty;
             var command = "";
