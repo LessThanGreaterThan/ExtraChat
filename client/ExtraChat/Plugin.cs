@@ -8,6 +8,7 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Game.Gui.Toast;
+using Dalamud.Game.Text;
 using Dalamud.Interface.Internal.Notifications;
 using Dalamud.IoC;
 using Dalamud.Plugin;
@@ -143,6 +144,11 @@ public class Plugin : IDalamudPlugin {
         } else {
             this.Interface.UiBuilder.AddNotification(message, this.Name, NotificationType.Info);
         }
+
+        this.ChatGui.PrintChat(new XivChatEntry {
+            Type = XivChatType.SystemMessage,
+            Message = message,
+        });
     }
 
     internal void ShowError(string message) {
@@ -151,5 +157,10 @@ public class Plugin : IDalamudPlugin {
         } else {
             this.Interface.UiBuilder.AddNotification(message, this.Name, NotificationType.Error);
         }
+
+        this.ChatGui.PrintChat(new XivChatEntry {
+            Type = XivChatType.SystemError,
+            Message = message,
+        });
     }
 }
