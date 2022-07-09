@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Text;
 using System.Threading.Channels;
+using Dalamud;
 using Dalamud.Interface;
 using Dalamud.Plugin;
 using ExtraChat.Protocol;
@@ -421,8 +422,18 @@ internal class PluginUi : IDisposable {
                 ImGui.SameLine();
 
                 if (ImGui.Button("Open profile")) {
+                    var region = this.Plugin.LocalPlayer?.HomeWorld.GameData?.DataCenter.Value?.Region ?? 2;
+                    var sub = this.Plugin.ClientState.ClientLanguage switch {
+                        ClientLanguage.Japanese => "jp",
+                        ClientLanguage.English when region != 2 => "eu",
+                        ClientLanguage.English => "na",
+                        ClientLanguage.German => "de",
+                        ClientLanguage.French => "fr",
+                        _ => "na",
+                    };
+
                     Process.Start(new ProcessStartInfo {
-                        FileName = "https://na.finalfantasyxiv.com/lodestone/my/setting/profile/",
+                        FileName = $"https://{sub}.finalfantasyxiv.com/lodestone/my/setting/profile/",
                         UseShellExecute = true,
                     });
                 }
