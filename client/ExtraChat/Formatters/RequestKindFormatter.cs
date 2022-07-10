@@ -24,6 +24,7 @@ public class RequestKindFormatter : IMessagePackFormatter<RequestKind> {
             RequestKind.Disband => "disband",
             RequestKind.Promote => "promote",
             RequestKind.Update => "update",
+            RequestKind.Version => "version",
             _ => throw new ArgumentOutOfRangeException(nameof(value)),
         };
 
