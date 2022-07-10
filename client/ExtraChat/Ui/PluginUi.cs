@@ -103,6 +103,11 @@ internal class PluginUi : IDisposable {
             if (ImGui.BeginTabItem("Linkshells")) {
                 var status = this.Plugin.Client.Status;
                 ImGui.TextUnformatted($"Status: {status}");
+                ImGui.SameLine();
+                if (ImGuiUtil.IconButton(FontAwesomeIcon.Wifi, tooltip: "Reconnect")) {
+                    this.Plugin.Client.StopLoop();
+                    this.Plugin.Client.StartLoop();
+                }
 
                 switch (status) {
                     case Client.State.Connected:
