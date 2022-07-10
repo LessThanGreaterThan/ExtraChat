@@ -498,7 +498,7 @@ internal class PluginUi : IDisposable {
             ImGui.InputTextWithHint("##linkshell-name", "Linkshell name", ref this._createName, 64);
 
             if (ImGui.IsWindowAppearing()) {
-                ImGui.SetKeyboardFocusHere();
+                ImGui.SetKeyboardFocusHere(-1);
             }
 
             if (!string.IsNullOrWhiteSpace(this._createName) && ImGui.Button("Create") && !this._busy) {
@@ -601,7 +601,7 @@ internal class PluginUi : IDisposable {
                                     ImGui.InputTextWithHint($"##{id}-rename-input", "New name", ref this._rename, 64);
 
                                     if (ImGui.IsWindowAppearing()) {
-                                        ImGui.SetKeyboardFocusHere();
+                                        ImGui.SetKeyboardFocusHere(-1);
                                     }
 
                                     if (ImGui.Button($"Rename##{id}-rename-button") && !string.IsNullOrWhiteSpace(this._rename)) {
