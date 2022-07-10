@@ -119,10 +119,26 @@ public class Plugin : IDalamudPlugin {
     }
 
     private void OnOpenGameObjectContextMenu(GameObjectContextMenuOpenArgs args) {
-        if (args.ObjectId == 0xE0000000) {
+        if (args.ObjectId != 0xE0000000) {
+            this.ObjectContext(args);
             return;
         }
 
+        if (args.ObjectWorld == 0) {
+            return;
+        }
+
+        var name = args.Text?.TextValue;
+        if (name == null) {
+            return;
+        }
+
+        args.AddCustomItem(new GameObjectContextMenuItem("Invite to ExtraChat Linkshell", _ => {
+            this.PluginUi.InviteInfo = (name, args.ObjectWorld);
+        }));
+    }
+
+    private void ObjectContext(GameObjectContextMenuOpenArgs args) {
         var obj = this.ObjectTable.SearchById(args.ObjectId);
         if (obj is not PlayerCharacter chara) {
             return;
