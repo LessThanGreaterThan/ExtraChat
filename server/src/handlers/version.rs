@@ -10,14 +10,16 @@ use crate::{
     WsStream,
 };
 
+const VERSION: u32 = 1;
+
 pub async fn version(conn: &mut WsStream, number: u32, req: VersionRequest) -> Result<bool> {
-    if req.version != 1 {
+    if req.version != VERSION {
         send(conn, number, ErrorResponse::new(None, "unsupported version")).await?;
         return Ok(false);
     }
 
     send(conn, number, VersionResponse {
-        version: 1,
+        version: VERSION,
     }).await?;
 
     Ok(true)
