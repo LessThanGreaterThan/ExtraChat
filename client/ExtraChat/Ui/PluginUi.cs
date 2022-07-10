@@ -105,8 +105,11 @@ internal class PluginUi : IDisposable {
                 ImGui.TextUnformatted($"Status: {status}");
                 ImGui.SameLine();
                 if (ImGuiUtil.IconButton(FontAwesomeIcon.Wifi, tooltip: "Reconnect")) {
-                    this.Plugin.Client.StopLoop();
-                    this.Plugin.Client.StartLoop();
+                    Task.Run(async () => {
+                        this.Plugin.Client.StopLoop();
+                        await Task.Delay(TimeSpan.FromSeconds(5));
+                        this.Plugin.Client.StartLoop();
+                    });
                 }
 
                 switch (status) {
