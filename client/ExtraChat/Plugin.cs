@@ -12,6 +12,7 @@ using Dalamud.Game.Text;
 using Dalamud.Interface.Internal.Notifications;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using ExtraChat.Integrations;
 using ExtraChat.Ui;
 using ExtraChat.Util;
 
@@ -62,6 +63,7 @@ public class Plugin : IDalamudPlugin {
     internal DalamudContextMenuBase ContextMenu { get; }
     internal GameFunctions GameFunctions { get; }
     internal Ipc Ipc { get; }
+    private IDisposable[] Integrations { get; }
 
     private PlayerCharacter? _localPlayer;
     private readonly Mutex _localPlayerLock = new();
@@ -91,6 +93,10 @@ public class Plugin : IDalamudPlugin {
         this.GameFunctions = new GameFunctions(this);
         this.Ipc = new Ipc(this);
 
+        this.Integrations = new IDisposable[] {
+            new ChatTwo(this),
+        };
+
         this.Framework!.Update += this.FrameworkUpdate;
         this.ContextMenu.Functions.ContextMenu.OnOpenGameObjectContextMenu += this.OnOpenGameObjectContextMenu;
     }
@@ -101,6 +107,11 @@ public class Plugin : IDalamudPlugin {
         this.ContextMenu.Functions.ContextMenu.OnOpenGameObjectContextMenu -= this.OnOpenGameObjectContextMenu;
         this.Framework.Update -= this.FrameworkUpdate;
         this._localPlayerLock.Dispose();
+
+        foreach (var integration in this.Integrations) {
+            integration.Dispose();
+        }
+
         this.Ipc.Dispose();
         this.GameFunctions.Dispose();
         this.PluginUi.Dispose();
