@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.3</Version>
+        <Version>1.1.0</Version>
         <TargetFramework>net5.0-windows</TargetFramework>
         <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -53,12 +53,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ASodium" Version="0.5.3" />
-        <PackageReference Include="Dalamud.ContextMenu" Version="1.0.0" />
-        <PackageReference Include="DalamudPackager" Version="2.1.7" />
-        <PackageReference Include="MessagePack" Version="2.3.112" />
-        <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.2" />
-        <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
+        <PackageReference Include="ASodium" Version="0.5.3"/>
+        <PackageReference Include="Dalamud.ContextMenu" Version="1.0.0"/>
+        <PackageReference Include="DalamudPackager" Version="2.1.7"/>
+        <PackageReference Include="MessagePack" Version="2.3.112"/>
+        <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.2"/>
+        <PackageReference Include="System.Threading.Channels" Version="6.0.0"/>
     </ItemGroup>
 
 </Project>
