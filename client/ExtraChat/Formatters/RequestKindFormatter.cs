@@ -78,6 +78,9 @@ public class RequestKindFormatter : IMessagePackFormatter<RequestKind> {
             case RequestKind.SendSecrets sendSecrets:
                 options.Resolver.GetFormatterWithVerify<SendSecretsRequest>().Serialize(ref writer, sendSecrets.Request, options);
                 break;
+            case RequestKind.Version version:
+                options.Resolver.GetFormatterWithVerify<VersionRequest>().Serialize(ref writer, version.Request, options);
+                break;
         }
     }
 
@@ -152,6 +155,10 @@ public class RequestKindFormatter : IMessagePackFormatter<RequestKind> {
             case "send_secrets": {
                 var request = options.Resolver.GetFormatterWithVerify<SendSecretsRequest>().Deserialize(ref reader, options);
                 return new RequestKind.SendSecrets(request);
+            }
+            case "version": {
+                var request = options.Resolver.GetFormatterWithVerify<VersionRequest>().Deserialize(ref reader, options);
+                return new RequestKind.Version(request);
             }
             default:
                 throw new MessagePackSerializationException("Invalid RequestKind");

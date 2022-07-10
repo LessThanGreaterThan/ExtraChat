@@ -98,6 +98,14 @@ public class ResponseKindFormatter : IMessagePackFormatter<ResponseKind> {
                 var response = options.Resolver.GetFormatterWithVerify<SendSecretsResponse>().Deserialize(ref reader, options);
                 return new ResponseKind.SendSecrets(response);
             }
+            case "version": {
+                var response = options.Resolver.GetFormatterWithVerify<VersionResponse>().Deserialize(ref reader, options);
+                return new ResponseKind.Version(response);
+            }
+            case "announce": {
+                var response = options.Resolver.GetFormatterWithVerify<AnnounceResponse>().Deserialize(ref reader, options);
+                return new ResponseKind.Announce(response);
+            }
             default:
                 throw new MessagePackSerializationException("Invalid ResponseKind");
         }

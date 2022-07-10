@@ -154,6 +154,8 @@ internal class Client : IDisposable {
 
     internal Task AuthenticateAndList() {
         return Task.Run(async () => {
+            await this.SendVersion();
+
             if (await this.Authenticate()) {
                 this._wasConnected = true;
                 this.Plugin.ChatGui.PrintChat(new XivChatEntry {
@@ -313,6 +315,12 @@ internal class Client : IDisposable {
             default:
                 throw new Exception("Unexpected response");
         }
+    }
+
+    internal async Task SendVersion() {
+        await this.QueueMessage(new RequestKind.Version(new VersionRequest {
+            Version = 1,
+        }));
     }
 
     internal async Task<bool> Authenticate() {
@@ -571,6 +579,10 @@ internal class Client : IDisposable {
                         Task.Run(async () => await this.HandleSendSecrets(resp));
                         break;
                     }
+                    case { Kind: ResponseKind.Announce { Response: var resp }, Number: 0 }: {
+                        Task.Run(() => this.HandleAnnounce(resp));
+                        break;
+                    }
                     default: {
                         this._waitersMutex.WaitOne();
                         try {
@@ -600,6 +612,13 @@ internal class Client : IDisposable {
         // ReSharper disable once FunctionNeverReturns
     }
     #pragma warning restore CS4014
+
+    private void HandleAnnounce(AnnounceResponse resp) {
+        this.Plugin.ChatGui.PrintChat(new XivChatEntry {
+            Type = XivChatType.Notice,
+            Message = $"[ExtraChat] {resp.Announcement}",
+        });
+    }
 
     private void HandleSecrets(SecretsResponse resp) {
         var kx = SodiumKeyExchange.CalculateClientSharedSecret(this.KeyPair.GetPublicKey(), this.GetPrivateKey(), resp.PublicKey);

@@ -54,4 +54,7 @@ public abstract record RequestKind {
 
     [MessagePackObject]
     public record SendSecrets(SendSecretsRequest Request) : RequestKind;
+
+    [MessagePackObject]
+    public record Version(VersionRequest Request) : RequestKind;
 }

@@ -66,4 +66,10 @@ public abstract record ResponseKind {
 
     [MessagePackObject]
     public record SendSecrets(SendSecretsResponse Response) : ResponseKind;
+
+    [MessagePackObject]
+    public record Version(VersionResponse Response) : ResponseKind;
+
+    [MessagePackObject]
+    public record Announce(AnnounceResponse Response) : ResponseKind;
 }
