@@ -86,6 +86,7 @@ internal class Client : IDisposable {
     internal void StopLoop() {
         this._active = false;
         this.WebSocket.Abort();
+        this.Status = State.Disconnected;
     }
 
     internal void StartLoop() {

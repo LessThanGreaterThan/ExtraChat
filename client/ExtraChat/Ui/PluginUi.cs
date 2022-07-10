@@ -104,11 +104,14 @@ internal class PluginUi : IDisposable {
                 var status = this.Plugin.Client.Status;
                 ImGui.TextUnformatted($"Status: {status}");
                 ImGui.SameLine();
-                if (ImGuiUtil.IconButton(FontAwesomeIcon.Wifi, tooltip: "Reconnect")) {
+                if (ImGuiUtil.IconButton(FontAwesomeIcon.Wifi, tooltip: "Reconnect") && !this._busy) {
+                    this._busy = true;
+
                     Task.Run(async () => {
                         this.Plugin.Client.StopLoop();
                         await Task.Delay(TimeSpan.FromSeconds(5));
                         this.Plugin.Client.StartLoop();
+                        this._busy = false;
                     });
                 }
 
