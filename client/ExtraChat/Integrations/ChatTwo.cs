@@ -42,7 +42,6 @@ internal class ChatTwo : IDisposable {
         this._id = this.Register.InvokeFunc();
     }
 
-
     private void Integration(string id, PlayerPayload? sender, ulong contentId, Payload? payload, SeString? senderString, SeString? content) {
         if (id != this._id) {
             return;

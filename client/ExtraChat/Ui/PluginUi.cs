@@ -740,6 +740,8 @@ internal class PluginUi : IDisposable {
                         }
 
                         if (ImGui.BeginPopupContextItem($"{this._selectedChannel}-{member.Name}@{member.World}-context")) {
+                            var cursor = ImGui.GetCursorPos();
+
                             if (rank == Rank.Admin) {
                                 if (member.Rank is not (Rank.Admin or Rank.Invited)) {
                                     if (ImGuiUtil.SelectableConfirm("Promote to admin", tooltip: "This will demote you to moderator.")) {
@@ -783,6 +785,11 @@ internal class PluginUi : IDisposable {
                                 }
                             }
 
+                            if (cursor == ImGui.GetCursorPos()) {
+                                ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int) ImGuiCol.TextDisabled]);
+                                ImGui.TextUnformatted("No options available");
+                                ImGui.PopStyleColor();
+                            }
 
                             ImGui.EndPopup();
                         }
