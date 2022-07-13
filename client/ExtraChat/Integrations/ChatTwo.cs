@@ -24,13 +24,24 @@ internal class ChatTwo : IDisposable {
         this.Available = this.Plugin.Interface.GetIpcSubscriber<object?>("ChatTwo.Available");
 
         this.Available.Subscribe(this.DoRegister);
-        this.DoRegister();
+        try {
+            this.DoRegister();
+        } catch (Exception) {
+            // try to register if chat 2 is already loaded
+            // if not, just ignore exception
+        }
+
         this.Invoke.Subscribe(this.Integration);
     }
 
     public void Dispose() {
         if (this._id != null) {
-            this.Unregister.InvokeAction(this._id);
+            try {
+                this.Unregister.InvokeAction(this._id);
+            } catch (Exception) {
+                // no-op
+            }
+
             this._id = null;
         }
 
