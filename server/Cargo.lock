@@ -336,6 +336,7 @@ dependencies = [
  "prefixed-api-key",
  "rand 0.8.5",
  "regex",
+ "reqwest",
  "rmp-serde",
  "rustyline",
  "serde",
@@ -346,6 +347,7 @@ dependencies = [
  "tokio",
  "tokio-tungstenite",
  "toml",
+ "url",
  "uuid",
 ]
 

@@ -18,6 +18,7 @@ parking_lot = "0.12"
 prefixed-api-key = { git = "https://git.annaclemens.io/ascclemens/prefixed-api-key.git" }
 rand = "0.8"
 regex = "1"
+reqwest = { version = "0.11", default-features = false }
 rmp-serde = "1"
 rustyline = { version = "9", default-features = false }
 serde = { version = "1", features = ["derive"] }
@@ -28,6 +29,7 @@ sha3 = "0.10"
 sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
 tokio-tungstenite = "0.17"
 toml = "0.5"
+url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 
 [dependencies.tokio]

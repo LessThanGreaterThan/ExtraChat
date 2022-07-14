@@ -49,6 +49,7 @@ pub mod handlers;
 pub mod util;
 pub mod updater;
 pub mod logging;
+pub mod influx;
 
 pub type WsStream = WebSocketStream<TcpStream>;
 
@@ -188,16 +189,27 @@ async fn main() -> Result<()> {
     {
         let state = Arc::clone(&state);
         tokio::task::spawn(async move {
+            let mut last_messages = 0;
+
             loop {
+                let messages = state.read().await.messages_sent.load(Ordering::SeqCst);
+                let diff = messages - last_messages;
+                last_messages = messages;
+
+                let clients = state.read().await.clients.len();
+
                 info!(
-                    "Clients: {}, messages sent: {}",
-                    state.read().await.clients.len(),
-                    state.read().await.messages_sent.load(Ordering::SeqCst),
+                    "Clients: {}, messages sent: {} (+{})",
+                    clients,
+                    messages,
+                    diff,
                 );
                 tokio::time::sleep(Duration::from_secs(60)).await;
             }
         });
     }
+
+    influx::spawn(&config, Arc::clone(&state));
 
     updater::spawn(Arc::clone(&state));
 
