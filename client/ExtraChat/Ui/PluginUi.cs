@@ -524,7 +524,7 @@ internal class PluginUi : IDisposable {
             ImGui.EndPopup();
         }
 
-        if (this.Plugin.Client.Channels.Count == 0) {
+        if (this.Plugin.Client.Channels.Count == 0 && this.Plugin.Client.InvitedChannels.Count == 0) {
             ImGui.TextUnformatted("You aren't in any linkshells yet. Try creating or joining one first.");
             goto AfterTable;
         }
