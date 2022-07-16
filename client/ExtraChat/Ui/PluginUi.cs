@@ -705,6 +705,10 @@ internal class PluginUi : IDisposable {
             }
 
             if (ImGui.TableSetColumnIndex(1) && this._selectedChannel != Guid.Empty) {
+                if (ImGui.IsWindowAppearing()) {
+                    Task.Run(async () => await this.Plugin.Client.ListMembers(this._selectedChannel));
+                }
+
                 void DrawInfo() {
                     if (!this.Plugin.Client.TryGetChannel(this._selectedChannel, out var channel)) {
                         return;
