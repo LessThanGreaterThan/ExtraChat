@@ -42,7 +42,7 @@ internal class Client : IDisposable {
 
     private KeyPair KeyPair { get; }
 
-    private readonly Mutex _waitersMutex = new();
+    private readonly SemaphoreSlim _waitersSemaphore = new(1, 1);
     private Dictionary<uint, ChannelWriter<ResponseKind>> Waiters { get; set; } = new();
     private Channel<(RequestContainer, ChannelWriter<ChannelReader<ResponseKind>>?)> ToSend { get; set; } = System.Threading.Channels.Channel.CreateUnbounded<(RequestContainer, ChannelWriter<ChannelReader<ResponseKind>>?)>();
 
@@ -69,6 +69,7 @@ internal class Client : IDisposable {
 
         this._active = false;
         this.WebSocket.Dispose();
+        this._waitersSemaphore.Dispose();
     }
 
     private void Login(object? sender, EventArgs e) {
@@ -112,11 +113,15 @@ internal class Client : IDisposable {
         });
     }
 
-    private ChannelReader<ResponseKind> RegisterWaiter(uint number) {
+    private async Task<ChannelReader<ResponseKind>> RegisterWaiter(uint number) {
         var channel = System.Threading.Channels.Channel.CreateBounded<ResponseKind>(1);
-        this._waitersMutex.WaitOne();
-        this.Waiters[number] = channel.Writer;
-        this._waitersMutex.ReleaseMutex();
+        await this._waitersSemaphore.WaitAsync();
+        try {
+            this.Waiters[number] = channel.Writer;
+        } finally {
+            this._waitersSemaphore.Release();
+        }
+
         return channel.Reader;
     }
 
@@ -501,9 +506,12 @@ internal class Client : IDisposable {
         }
 
         this.ToSend = System.Threading.Channels.Channel.CreateUnbounded<(RequestContainer, ChannelWriter<ChannelReader<ResponseKind>>?)>();
-        this._waitersMutex.WaitOne();
-        this.Waiters = new Dictionary<uint, ChannelWriter<ResponseKind>>();
-        this._waitersMutex.ReleaseMutex();
+        await this._waitersSemaphore.WaitAsync();
+        try {
+            this.Waiters = new Dictionary<uint, ChannelWriter<ResponseKind>>();
+        } finally {
+            this._waitersSemaphore.Release();
+        }
 
         // If the websocket is closed, we need to reconnect
         this.WebSocket.Dispose();
@@ -585,13 +593,13 @@ internal class Client : IDisposable {
                         break;
                     }
                     default: {
-                        this._waitersMutex.WaitOne();
+                        await this._waitersSemaphore.WaitAsync();
                         try {
                             if (this.Waiters.Remove(response.Number, out var waiter)) {
                                 await waiter.WriteAsync(response.Kind);
                             }
                         } finally {
-                            this._waitersMutex.ReleaseMutex();
+                            this._waitersSemaphore.Release();
                         }
 
                         break;
@@ -603,7 +611,7 @@ internal class Client : IDisposable {
 
                 await this.WebSocket.SendMessage(req);
                 if (update != null) {
-                    await update.WriteAsync(this.RegisterWaiter(req.Number));
+                    await update.WriteAsync(await this.RegisterWaiter(req.Number));
                 }
             }
         }
