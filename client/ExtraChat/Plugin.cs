@@ -60,7 +60,7 @@ public class Plugin : IDalamudPlugin {
     internal Client Client { get; }
     internal Commands Commands { get; }
     internal PluginUi PluginUi { get; }
-    internal DalamudContextMenuBase ContextMenu { get; }
+    internal DalamudContextMenu ContextMenu { get; }
     internal GameFunctions GameFunctions { get; }
     internal Ipc Ipc { get; }
     private IDisposable[] Integrations { get; }
@@ -85,7 +85,7 @@ public class Plugin : IDalamudPlugin {
     public Plugin() {
         SodiumInit.Init();
         WorldUtil.Initialise(this.DataManager!);
-        this.ContextMenu = new DalamudContextMenuBase();
+        this.ContextMenu = new DalamudContextMenu();
         this.Config = this.Interface!.GetPluginConfig() as Configuration ?? new Configuration();
         this.Client = new Client(this);
         this.Commands = new Commands(this);
@@ -98,13 +98,13 @@ public class Plugin : IDalamudPlugin {
         };
 
         this.Framework!.Update += this.FrameworkUpdate;
-        this.ContextMenu.Functions.ContextMenu.OnOpenGameObjectContextMenu += this.OnOpenGameObjectContextMenu;
+        this.ContextMenu.OnOpenGameObjectContextMenu += this.OnOpenGameObjectContextMenu;
     }
 
     public void Dispose() {
         this.GameFunctions.ResetOverride();
 
-        this.ContextMenu.Functions.ContextMenu.OnOpenGameObjectContextMenu -= this.OnOpenGameObjectContextMenu;
+        this.ContextMenu.OnOpenGameObjectContextMenu -= this.OnOpenGameObjectContextMenu;
         this.Framework.Update -= this.FrameworkUpdate;
         this._localPlayerLock.Dispose();
 
