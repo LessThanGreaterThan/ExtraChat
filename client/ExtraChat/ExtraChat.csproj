@@ -61,4 +61,8 @@
         <PackageReference Include="System.Threading.Channels" Version="6.0.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="..\icon.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false"/>
+    </ItemGroup>
+
 </Project>
