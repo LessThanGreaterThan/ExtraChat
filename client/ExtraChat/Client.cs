@@ -206,9 +206,7 @@ internal class Client : IDisposable {
 
     internal async Task<(Channel, byte[])> Create(string name) {
         var shared = SodiumSecretBoxXChaCha20Poly1305.GenerateKey();
-        var nonce = SodiumSecretBoxXChaCha20Poly1305.GenerateNonce();
-        var ciphertext = SodiumSecretBoxXChaCha20Poly1305.Create(Encoding.UTF8.GetBytes(name), nonce, shared);
-        var encryptedName = nonce.Concat(ciphertext);
+        var encryptedName = SecretBox.Encrypt(shared, Encoding.UTF8.GetBytes(name));
 
         var response = await this.QueueMessageAndWait(new RequestKind.Create(new CreateRequest {
             Name = encryptedName,
