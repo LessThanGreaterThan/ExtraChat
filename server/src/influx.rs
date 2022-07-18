@@ -41,15 +41,79 @@ pub fn spawn(config: &Config, state: Arc<RwLock<State>>) {
 
             let clients = state.read().await.clients.len();
 
+            let num_users = sqlx::query!(
+                // language=sqlite
+                "select count(*) as count from users"
+            )
+                .fetch_one(&state.read().await.db)
+                .await
+                .ok();
+
+            let in_one = sqlx::query!(
+                // language=sqlite
+                "select count(distinct lodestone_id) as count from user_channels"
+            )
+                .fetch_one(&state.read().await.db)
+                .await
+                .ok();
+
+            let num_linkshells = sqlx::query!(
+                // language=sqlite
+                "select count(*) as count from channels"
+            )
+                .fetch_one(&state.read().await.db)
+                .await
+                .ok();
+
+            let outstanding_invites = sqlx::query!(
+                // language=sqlite
+                "select count(*) as count from channel_invites"
+            )
+                .fetch_one(&state.read().await.db)
+                .await
+                .ok();
+
             let timestamp = Utc::now().timestamp_nanos();
 
-            let line_format = format!(
+            let mut line_format = format!(
                 "logged_in value={logged_in}u {timestamp}\nmessages_this_instance value={messages_this_instance}u {timestamp}\nmessages_new value={messages_new}u {timestamp}\n",
                 logged_in = clients,
                 messages_this_instance = messages,
                 messages_new = diff,
                 timestamp = timestamp,
             );
+
+            if let Some(num_users) = num_users {
+                line_format.push_str(&format!(
+                    "users value={users}u {timestamp}\n",
+                    users = num_users.count,
+                    timestamp = timestamp,
+                ));
+            }
+
+            if let Some(in_one) = in_one {
+                line_format.push_str(&format!(
+                    "users_in_at_least_one_linkshell value={in_one}u {timestamp}\n",
+                    in_one = in_one.count,
+                    timestamp = timestamp,
+                ));
+            }
+
+            if let Some(num_linkshells) = num_linkshells {
+                line_format.push_str(&format!(
+                    "linkshells value={linkshells}u {timestamp}\n",
+                    linkshells = num_linkshells.count,
+                    timestamp = timestamp,
+                ));
+            }
+
+            if let Some(outstanding_invites) = outstanding_invites {
+                line_format.push_str(&format!(
+                    "outstanding_invites value={outstanding_invites}u {timestamp}\n",
+                    outstanding_invites = outstanding_invites.count,
+                    timestamp = timestamp,
+                ));
+            }
 
             debug!("line_format: {}", line_format);
 
