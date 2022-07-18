@@ -130,6 +130,10 @@ public class Plugin : IDalamudPlugin {
     }
 
     private void OnOpenGameObjectContextMenu(GameObjectContextMenuOpenArgs args) {
+        if (!this.Config.ShowContextMenuItem) {
+            return;
+        }
+
         if (args.ObjectId != 0xE0000000) {
             this.ObjectContext(args);
             return;

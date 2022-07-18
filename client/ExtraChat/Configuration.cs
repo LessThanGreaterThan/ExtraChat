@@ -11,6 +11,7 @@ internal class Configuration : IPluginConfiguration {
     public int Version { get; set; } = 1;
 
     public bool UseNativeToasts = true;
+    public bool ShowContextMenuItem = true;
     public XivChatType DefaultChannel = XivChatType.Debug;
     public Dictionary<ulong, ConfigInfo> Configs { get; } = new();
 

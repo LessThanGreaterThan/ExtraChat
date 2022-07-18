@@ -171,6 +171,7 @@ internal class PluginUi : IDisposable {
 
     private void DrawSettingsGeneral(ref bool anyChanged) {
         anyChanged |= ImGui.Checkbox("Use native toasts", ref this.Plugin.Config.UseNativeToasts);
+        anyChanged |= ImGui.Checkbox("Add invite context menu item", ref this.Plugin.Config.ShowContextMenuItem);
         // ImGui.Spacing();
         //
         // ImGui.TextUnformatted("Default channel");
