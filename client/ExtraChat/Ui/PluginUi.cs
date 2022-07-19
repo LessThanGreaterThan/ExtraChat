@@ -187,12 +187,19 @@ internal class PluginUi : IDisposable {
         //     ImGui.EndCombo();
         // }
 
-        if (ImGui.Checkbox("Allow receiving invites", ref this.Plugin.ConfigInfo.AllowInvites)) {
-            anyChanged = true;
-            Task.Run(async () => await this.Plugin.Client.AllowInvitesToast(this.Plugin.ConfigInfo.AllowInvites));
+        if (this.Plugin.LocalPlayer is { } player) {
+            ImGui.SetNextItemOpen(true);
+            if (ImGui.TreeNodeEx($"Settings for {player.Name}@{player.HomeWorld.GameData?.Name}")) {
+                if (ImGui.Checkbox("Allow receiving invites", ref this.Plugin.ConfigInfo.AllowInvites)) {
+                    anyChanged = true;
+                    Task.Run(async () => await this.Plugin.Client.AllowInvitesToast(this.Plugin.ConfigInfo.AllowInvites));
+                }
+
+                ImGui.TreePop();
+            }
         }
 
-        if (this.Plugin.Client.Status == Client.State.Connected && ImGui.CollapsingHeader("Delete account")) {
+        if (this.Plugin.Client.Status == Client.State.Connected && ImGui.TreeNodeEx("Delete account")) {
             ImGui.PushTextWrapPos();
 
             if (this.Plugin.Client.Channels.Count > 0) {
@@ -206,6 +213,8 @@ internal class PluginUi : IDisposable {
             }
 
             ImGui.PopTextWrapPos();
+
+            ImGui.TreePop();
         }
     }
 
