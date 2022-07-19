@@ -192,7 +192,7 @@ internal class PluginUi : IDisposable {
             Task.Run(async () => await this.Plugin.Client.AllowInvitesToast(this.Plugin.ConfigInfo.AllowInvites));
         }
 
-        if (ImGui.CollapsingHeader("Delete account")) {
+        if (this.Plugin.Client.Status == Client.State.Connected && ImGui.CollapsingHeader("Delete account")) {
             ImGui.PushTextWrapPos();
 
             if (this.Plugin.Client.Channels.Count > 0) {
