@@ -7,9 +7,13 @@ use sqlx::database::HasArguments;
 use sqlx::encode::IsNull;
 
 #[repr(transparent)]
-pub struct Redacted<T>(pub T);
+pub struct Redacted<T>(T);
 
 impl<T> Redacted<T> {
+    pub fn new(t: T) -> Self {
+        Self(t)
+    }
+
     pub fn into_inner(self) -> T {
         self.0
     }

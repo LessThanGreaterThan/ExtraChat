@@ -24,6 +24,6 @@ pub async fn public_key(state: Arc<RwLock<State>>, conn: &mut WsStream, number: 
     crate::util::send(conn, number, PublicKeyResponse {
         name: req.name,
         world: req.world,
-        pk: pk.map(Redacted),
+        pk: pk.map(Redacted::new),
     }).await
 }
