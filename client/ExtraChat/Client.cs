@@ -308,6 +308,7 @@ internal class Client : IDisposable {
         this.Plugin.Config.Configs.Remove(this.Plugin.ClientState.LocalContentId);
         this.Plugin.SaveConfig();
         this.StopLoop();
+        this.Status = State.NotAuthenticated;
     }
 
     /// <summary>
