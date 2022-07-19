@@ -358,7 +358,7 @@ internal class Client : IDisposable {
         var response = await this.QueueMessageAndWait(new RequestKind.Authenticate(new AuthenticateRequest {
             Key = key,
             PublicKey = this.KeyPair.GetPublicKey(),
-            AllowInvites = true,
+            AllowInvites = this.Plugin.ConfigInfo.AllowInvites,
         }));
 
         var success = response switch {
