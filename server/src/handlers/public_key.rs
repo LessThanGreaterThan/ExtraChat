@@ -10,25 +10,20 @@ use crate::util::redacted::Redacted;
 pub async fn public_key(state: Arc<RwLock<State>>, conn: &mut WsStream, number: u32, req: PublicKeyRequest) -> Result<()> {
     let id = match state.read().await.ids.get(&(req.name.clone(), req.world)) {
         Some(id) => *id,
-        None => {
-            crate::util::send(conn, number, PublicKeyResponse {
-                name: req.name,
-                world: req.world,
-                pk: None,
-            }).await?;
-            return Ok(());
-        }
+        None => return crate::util::send(conn, number, PublicKeyResponse {
+            name: req.name,
+            world: req.world,
+            pk: None,
+        }).await,
     };
 
     let pk = match state.read().await.clients.get(&id) {
-        Some(client) => Some(client.read().await.pk.clone()),
-        None => None,
+        Some(client) if client.read().await.allow_invites => Some(client.read().await.pk.clone()),
+        _ => None,
     };
     crate::util::send(conn, number, PublicKeyResponse {
         name: req.name,
         world: req.world,
         pk: pk.map(Redacted),
-    }).await?;
-
-    Ok(())
+    }).await
 }

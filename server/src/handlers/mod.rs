@@ -1,4 +1,5 @@
 pub use self::{
+    allow_invites::*,
     authenticate::*,
     create::*,
     disband::*,
@@ -18,6 +19,7 @@ pub use self::{
     version::*,
 };
 
+pub mod allow_invites;
 pub mod authenticate;
 pub mod create;
 pub mod disband;

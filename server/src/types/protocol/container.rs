@@ -28,6 +28,7 @@ pub enum RequestKind {
     PublicKey(PublicKeyRequest),
     Secrets(SecretsRequest),
     SendSecrets(SendSecretsRequest),
+    AllowInvites(AllowInvitesRequest),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -61,6 +62,7 @@ pub enum ResponseKind {
     Secrets(SecretsResponse),
     SendSecrets(SendSecretsResponse),
     Announce(AnnounceResponse),
+    AllowInvites(AllowInvitesResponse),
 }
 
 macro_rules! request_container {
@@ -90,6 +92,7 @@ request_container!(Update, UpdateRequest);
 request_container!(PublicKey, PublicKeyRequest);
 request_container!(Secrets, SecretsRequest);
 request_container!(SendSecrets, SendSecretsRequest);
+request_container!(AllowInvites, AllowInvitesRequest);
 
 macro_rules! response_container {
     ($name:ident, $response:ty) => {
@@ -123,3 +126,4 @@ response_container!(MemberChange, MemberChangeResponse);
 response_container!(Secrets, SecretsResponse);
 response_container!(SendSecrets, SendSecretsResponse);
 response_container!(Announce, AnnounceResponse);
+response_container!(AllowInvites, AllowInvitesResponse);

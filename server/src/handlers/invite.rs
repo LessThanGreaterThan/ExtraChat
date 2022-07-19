@@ -23,11 +23,18 @@ pub async fn invite(state: Arc<RwLock<State>>, client_state: Arc<RwLock<ClientSt
         return crate::util::send(conn, number, ErrorResponse::new(req.channel, "not enough permissions to invite")).await;
     }
 
+    const NOT_ONLINE: &str = "user not online";
     let target_id = match state.read().await.ids.get(&(req.name.clone(), req.world)) {
         Some(id) => *id,
-        None => return crate::util::send(conn, number, ErrorResponse::new(req.channel, "user not online")).await,
+        None => return crate::util::send(conn, number, ErrorResponse::new(req.channel, NOT_ONLINE)).await,
     };
     let target_id_i = target_id as i64;
+
+    if let Some(client) = state.read().await.clients.get(&target_id) {
+        if !client.read().await.allow_invites {
+            return crate::util::send(conn, number, ErrorResponse::new(req.channel, NOT_ONLINE)).await;
+        }
+    }
 
     if target_id_i == lodestone_id {
         return crate::util::send(conn, number, ErrorResponse::new(req.channel, "cannot invite self")).await;
@@ -110,7 +117,7 @@ pub async fn invite(state: Arc<RwLock<State>>, client_state: Arc<RwLock<ClientSt
                 }),
             }).await?;
         }
-        None => return crate::util::send(conn, number, ErrorResponse::new(req.channel, "user not online")).await,
+        None => return crate::util::send(conn, number, ErrorResponse::new(req.channel, NOT_ONLINE)).await,
     }
 
     crate::util::send(conn, number, InviteResponse {

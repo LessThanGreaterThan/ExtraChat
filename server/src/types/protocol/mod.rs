@@ -1,3 +1,4 @@
+pub mod allow_invites;
 pub mod announce;
 pub mod authenticate;
 pub mod container;
@@ -22,6 +23,7 @@ pub mod version;
 pub mod channel;
 
 pub use self::{
+    allow_invites::*,
     announce::*,
     authenticate::*,
     container::*,

@@ -69,6 +69,7 @@ pub async fn authenticate(state: Arc<RwLock<State>>, client_state: Arc<RwLock<Cl
     });
 
     c_state.pk = req.pk.into_inner();
+    c_state.allow_invites = req.allow_invites;
 
     // release lock asap
     drop(c_state);

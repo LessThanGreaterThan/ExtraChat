@@ -257,6 +257,7 @@ pub struct ClientState {
     user: Option<User>,
     tx: Sender<ResponseContainer>,
     pk: Vec<u8>,
+    allow_invites: bool,
 }
 
 impl ClientState {
@@ -344,6 +345,7 @@ async fn client_loop(state: Arc<RwLock<State>>, mut conn: WsStream) -> Result<()
         user: None,
         tx,
         pk: Default::default(),
+        allow_invites: false,
     }));
 
     loop {
@@ -422,6 +424,9 @@ async fn client_loop(state: Arc<RwLock<State>>, mut conn: WsStream) -> Result<()
                                 RequestKind::SendSecrets(req) if logged_in => {
                                     crate::handlers::send_secrets(Arc::clone(&state), Arc::clone(&client_state), &mut conn, msg.number, req).await?;
                                 }
+                                RequestKind::AllowInvites(req) if logged_in => {
+                                    crate::handlers::allow_invites(Arc::clone(&state), Arc::clone(&client_state), &mut conn, msg.number, req).await?;
+                                }
                                 _ if !logged_in => {
                                     util::send(&mut conn, msg.number, ErrorResponse::new(None, "not logged in")).await?;
                                 }
@@ -446,10 +451,14 @@ async fn client_loop(state: Arc<RwLock<State>>, mut conn: WsStream) -> Result<()
         }
     }
 
+    debug!("ending client thread");
+
     if let Some(user) = &client_state.read().await.user {
         state.write().await.clients.remove(&user.lodestone_id);
         state.write().await.ids.remove(&(user.name.clone(), util::id_from_world(user.world)));
     }
+
+    debug!("client thread ended");
 
     Ok(())
 }
