@@ -200,7 +200,7 @@ internal class PluginUi : IDisposable {
             } else {
                 ImGui.TextUnformatted("Clicking the button below will permanently and irreversibly delete your account from ExtraChat's servers.");
 
-                if (ImGui.Button("Delete account")) {
+                if (ImGui.Button("Delete account##actual-delete")) {
                     Task.Run(async () => await this.Plugin.Client.DeleteAccountToast());
                 }
             }
