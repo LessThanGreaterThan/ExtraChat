@@ -188,8 +188,7 @@ internal class PluginUi : IDisposable {
         // }
 
         if (this.Plugin.LocalPlayer is { } player) {
-            ImGui.SetNextItemOpen(true);
-            if (ImGui.TreeNodeEx($"Settings for {player.Name}@{player.HomeWorld.GameData?.Name}")) {
+            if (ImGui.TreeNodeEx($"Settings for {player.Name}{CrossWorld}{player.HomeWorld.GameData?.Name}")) {
                 if (ImGui.Checkbox("Allow receiving invites", ref this.Plugin.ConfigInfo.AllowInvites)) {
                     anyChanged = true;
                     Task.Run(async () => await this.Plugin.Client.AllowInvitesToast(this.Plugin.ConfigInfo.AllowInvites));
