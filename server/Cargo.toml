@@ -25,7 +25,6 @@ serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
 serde_repr = "0.1"
 sha3 = "0.10"
-#sodiumoxide = "0.2"
 sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
 tokio-tungstenite = "0.17"
 toml = "0.5"
