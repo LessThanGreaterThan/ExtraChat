@@ -193,6 +193,8 @@ internal class PluginUi : IDisposable {
         }
 
         if (ImGui.CollapsingHeader("Delete account")) {
+            ImGui.PushTextWrapPos();
+
             if (this.Plugin.Client.Channels.Count > 0) {
                 ImGui.TextUnformatted("You must leave or disband all ExtraChat linkshells you are currently in before you can delete your account.");
             } else {
@@ -202,6 +204,8 @@ internal class PluginUi : IDisposable {
                     Task.Run(async () => await this.Plugin.Client.DeleteAccountToast());
                 }
             }
+
+            ImGui.PopTextWrapPos();
         }
     }
 
