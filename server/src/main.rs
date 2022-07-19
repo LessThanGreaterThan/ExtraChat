@@ -427,6 +427,9 @@ async fn client_loop(state: Arc<RwLock<State>>, mut conn: WsStream) -> Result<()
                                 RequestKind::AllowInvites(req) if logged_in => {
                                     crate::handlers::allow_invites(Arc::clone(&state), Arc::clone(&client_state), &mut conn, msg.number, req).await?;
                                 }
+                                RequestKind::DeleteAccount(req) if logged_in => {
+                                    crate::handlers::delete_account(Arc::clone(&state), Arc::clone(&client_state), &mut conn, msg.number, req).await?;
+                                }
                                 _ if !logged_in => {
                                     util::send(&mut conn, msg.number, ErrorResponse::new(None, "not logged in")).await?;
                                 }

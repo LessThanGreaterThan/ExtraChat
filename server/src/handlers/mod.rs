@@ -2,6 +2,7 @@ pub use self::{
     allow_invites::*,
     authenticate::*,
     create::*,
+    delete_account::*,
     disband::*,
     invite::*,
     join::*,
@@ -22,6 +23,7 @@ pub use self::{
 pub mod allow_invites;
 pub mod authenticate;
 pub mod create;
+pub mod delete_account;
 pub mod disband;
 pub mod invite;
 pub mod join;

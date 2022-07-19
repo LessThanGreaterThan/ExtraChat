@@ -1,8 +1,34 @@
+pub use self::{
+    allow_invites::*,
+    announce::*,
+    authenticate::*,
+    container::*,
+    create::*,
+    delete_account::*,
+    disband::*,
+    error::*,
+    invite::*,
+    join::*,
+    kick::*,
+    leave::*,
+    list::*,
+    member_change::*,
+    message::*,
+    ping::*,
+    promote::*,
+    public_key::*,
+    register::*,
+    secrets::*,
+    update::*,
+    version::*,
+};
+
 pub mod allow_invites;
 pub mod announce;
 pub mod authenticate;
 pub mod container;
 pub mod create;
+pub mod delete_account;
 pub mod disband;
 pub mod error;
 pub mod invite;
@@ -22,26 +48,3 @@ pub mod version;
 
 pub mod channel;
 
-pub use self::{
-    allow_invites::*,
-    announce::*,
-    authenticate::*,
-    container::*,
-    create::*,
-    disband::*,
-    error::*,
-    invite::*,
-    join::*,
-    kick::*,
-    leave::*,
-    list::*,
-    member_change::*,
-    message::*,
-    ping::*,
-    promote::*,
-    public_key::*,
-    register::*,
-    secrets::*,
-    update::*,
-    version::*,
-};
