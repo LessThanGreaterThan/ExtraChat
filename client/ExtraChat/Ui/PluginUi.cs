@@ -395,7 +395,7 @@ internal class PluginUi : IDisposable {
                 ImGui.PushTextWrapPos();
                 ImGui.TextUnformatted("ExtraChat is a third-party service that allows for functionally unlimited extra linkshells that work across data centres.");
                 ImGui.TextUnformatted("In order to use ExtraChat, characters must be registered and verified using their Lodestone profile.");
-                ImGui.TextUnformatted("ExtraChat stores your character's name, home world, and Lodestone ID, as well as what linkshells your character is a part of and has been invited to.");
+                ImGui.TextUnformatted("ExtraChat stores your character's name, home world, and Lodestone ID, as well as what ExtraChat linkshells your character is a part of and has been invited to.");
                 ImGui.TextUnformatted("Messages and linkshell names are end-to-end encrypted; the server cannot decrypt them and does not store messages.");
                 ImGui.TextUnformatted("In the event of a legal subpoena, ExtraChat will provide any information available to the legal system.");
                 ImGui.PopTextWrapPos();
