@@ -289,6 +289,27 @@ internal class Client : IDisposable {
         }
     }
 
+    internal async Task<string?> DeleteAccount() {
+        var response = await this.QueueMessageAndWait(new RequestKind.DeleteAccount(new DeleteAccountRequest()));
+        return response switch {
+            ResponseKind.Error { Response.Error: var error } => error,
+            ResponseKind.DeleteAccount => null,
+            _ => throw new Exception("Unexpected response"),
+        };
+    }
+
+    internal async Task DeleteAccountToast() {
+        var message = await this.DeleteAccount();
+        if (message != null) {
+            this.Plugin.ShowError($"Could not delete account: {message}");
+            return;
+        }
+
+        this.Plugin.Config.Configs.Remove(this.Plugin.ClientState.LocalContentId);
+        this.Plugin.SaveConfig();
+        this.StopLoop();
+    }
+
     /// <summary>
     /// Attempts to register the user after the challenge has been completed.
     /// </summary>
@@ -337,6 +358,7 @@ internal class Client : IDisposable {
         var response = await this.QueueMessageAndWait(new RequestKind.Authenticate(new AuthenticateRequest {
             Key = key,
             PublicKey = this.KeyPair.GetPublicKey(),
+            AllowInvites = true,
         }));
 
         var success = response switch {
@@ -488,6 +510,21 @@ internal class Client : IDisposable {
         }));
     }
 
+    internal async Task<bool> AllowInvites(bool allow) {
+        var resp = await this.QueueMessageAndWait(new RequestKind.AllowInvites(new AllowInvitesRequest {
+            Allowed = allow,
+        }));
+
+
+        return resp is ResponseKind.AllowInvites { Response.Allowed: var respAllowed } && respAllowed == allow;
+    }
+
+    internal async Task AllowInvitesToast(bool allow) {
+        if (!await this.AllowInvites(allow)) {
+            this.Plugin.ShowError("Could not set invite permissions.");
+        }
+    }
+
     private bool _up;
 
     #pragma warning disable CS4014
@@ -503,6 +540,10 @@ internal class Client : IDisposable {
             return;
         }
 
+        this.Channels.Clear();
+        this.InvitedChannels.Clear();
+        this.ChannelRanks.Clear();
+        this.Waiters.Clear();
         this.ToSend = System.Threading.Channels.Channel.CreateUnbounded<(RequestContainer, ChannelWriter<ChannelReader<ResponseKind>>?)>();
         await this._waitersSemaphore.WaitAsync();
         try {

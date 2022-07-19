@@ -186,6 +186,23 @@ internal class PluginUi : IDisposable {
         //
         //     ImGui.EndCombo();
         // }
+
+        if (ImGui.Checkbox("Allow receiving invites", ref this.Plugin.ConfigInfo.AllowInvites)) {
+            anyChanged = true;
+            Task.Run(async () => await this.Plugin.Client.AllowInvitesToast(this.Plugin.ConfigInfo.AllowInvites));
+        }
+
+        if (ImGui.CollapsingHeader("Delete account")) {
+            if (this.Plugin.Client.Channels.Count > 0) {
+                ImGui.TextUnformatted("You must leave or disband all ExtraChat linkshells you are currently in before you can delete your account.");
+            } else {
+                ImGui.TextUnformatted("Clicking the button below will permanently and irreversibly delete your account from ExtraChat's servers.");
+
+                if (ImGui.Button("Delete account")) {
+                    Task.Run(async () => await this.Plugin.Client.DeleteAccountToast());
+                }
+            }
+        }
     }
 
     private void DrawSettingsLinkshells(ref bool anyChanged) {

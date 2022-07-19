@@ -25,6 +25,8 @@ public class RequestKindFormatter : IMessagePackFormatter<RequestKind> {
             RequestKind.Promote => "promote",
             RequestKind.Update => "update",
             RequestKind.Version => "version",
+            RequestKind.DeleteAccount => "delete_account",
+            RequestKind.AllowInvites => "allow_invites",
             _ => throw new ArgumentOutOfRangeException(nameof(value)),
         };
 
@@ -82,6 +84,12 @@ public class RequestKindFormatter : IMessagePackFormatter<RequestKind> {
             case RequestKind.Version version:
                 options.Resolver.GetFormatterWithVerify<VersionRequest>().Serialize(ref writer, version.Request, options);
                 break;
+            case RequestKind.DeleteAccount deleteAccount:
+                options.Resolver.GetFormatterWithVerify<DeleteAccountRequest>().Serialize(ref writer, deleteAccount.Request, options);
+                break;
+            case RequestKind.AllowInvites allowInvites:
+                options.Resolver.GetFormatterWithVerify<AllowInvitesRequest>().Serialize(ref writer, allowInvites.Request, options);
+                break;
         }
     }
 
@@ -94,7 +102,7 @@ public class RequestKindFormatter : IMessagePackFormatter<RequestKind> {
 
         switch (key) {
             case "ping": {
-                var request = MessagePackSerializer.Deserialize<PingRequest>(ref reader, options);
+                var request = options.Resolver.GetFormatterWithVerify<PingRequest>().Deserialize(ref reader, options);
                 return new RequestKind.Ping(request);
             }
             case "authenticate": {
@@ -160,6 +168,14 @@ public class RequestKindFormatter : IMessagePackFormatter<RequestKind> {
             case "version": {
                 var request = options.Resolver.GetFormatterWithVerify<VersionRequest>().Deserialize(ref reader, options);
                 return new RequestKind.Version(request);
+            }
+            case "delete_account": {
+                var request = options.Resolver.GetFormatterWithVerify<DeleteAccountRequest>().Deserialize(ref reader, options);
+                return new RequestKind.DeleteAccount(request);
+            }
+            case "allow_invites": {
+                var request = options.Resolver.GetFormatterWithVerify<AllowInvitesRequest>().Deserialize(ref reader, options);
+                return new RequestKind.AllowInvites(request);
             }
             default:
                 throw new MessagePackSerializationException("Invalid RequestKind");

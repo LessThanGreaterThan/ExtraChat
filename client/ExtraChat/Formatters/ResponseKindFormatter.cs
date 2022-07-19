@@ -106,6 +106,14 @@ public class ResponseKindFormatter : IMessagePackFormatter<ResponseKind> {
                 var response = options.Resolver.GetFormatterWithVerify<AnnounceResponse>().Deserialize(ref reader, options);
                 return new ResponseKind.Announce(response);
             }
+            case "delete_account": {
+                var response = options.Resolver.GetFormatterWithVerify<DeleteAccountResponse>().Deserialize(ref reader, options);
+                return new ResponseKind.DeleteAccount(response);
+            }
+            case "allow_invites": {
+                var response = options.Resolver.GetFormatterWithVerify<AllowInvitesResponse>().Deserialize(ref reader, options);
+                return new ResponseKind.AllowInvites(response);
+            }
             default:
                 throw new MessagePackSerializationException("Invalid ResponseKind");
         }

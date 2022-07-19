@@ -57,4 +57,10 @@ public abstract record RequestKind {
 
     [MessagePackObject]
     public record Version(VersionRequest Request) : RequestKind;
+
+    [MessagePackObject]
+    public record DeleteAccount(DeleteAccountRequest Request) : RequestKind;
+
+    [MessagePackObject]
+    public record AllowInvites(AllowInvitesRequest Request) : RequestKind;
 }

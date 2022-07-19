@@ -10,4 +10,7 @@ public class AuthenticateRequest {
 
     [Key(1)]
     public byte[] PublicKey;
+
+    [Key(2)]
+    public bool AllowInvites;
 }

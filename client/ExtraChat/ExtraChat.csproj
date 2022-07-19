@@ -53,16 +53,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ASodium" Version="0.5.3"/>
-        <PackageReference Include="Dalamud.ContextMenu" Version="1.1.1"/>
-        <PackageReference Include="DalamudPackager" Version="2.1.7"/>
-        <PackageReference Include="MessagePack" Version="2.4.35"/>
-        <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.2"/>
-        <PackageReference Include="System.Threading.Channels" Version="6.0.0"/>
+        <PackageReference Include="ASodium" Version="0.5.3" />
+        <PackageReference Include="Dalamud.ContextMenu" Version="1.1.1" />
+        <PackageReference Include="DalamudPackager" Version="2.1.7" />
+        <PackageReference Include="MessagePack" Version="2.4.35" />
+        <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.2" />
+        <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="..\icon.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false"/>
+        <Content Include="..\icon.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
     </ItemGroup>
 
 </Project>

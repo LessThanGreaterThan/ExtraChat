@@ -72,4 +72,10 @@ public abstract record ResponseKind {
 
     [MessagePackObject]
     public record Announce(AnnounceResponse Response) : ResponseKind;
+
+    [MessagePackObject]
+    public record DeleteAccount(DeleteAccountResponse Response) : ResponseKind;
+
+    [MessagePackObject]
+    public record AllowInvites(AllowInvitesResponse Response) : ResponseKind;
 }
