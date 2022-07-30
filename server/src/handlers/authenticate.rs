@@ -11,8 +11,7 @@ use crate::{AuthenticateRequest, AuthenticateResponse, ClientState, State, User,
 
 pub async fn authenticate(state: Arc<RwLock<State>>, client_state: Arc<RwLock<ClientState>>, conn: &mut WsStream, number: u32, req: AuthenticateRequest) -> anyhow::Result<()> {
     if client_state.read().await.user.is_some() {
-        util::send(conn, number, AuthenticateResponse::error("already logged in")).await?;
-        return Ok(());
+        return util::send(conn, number, AuthenticateResponse::error("already logged in")).await;
     }
 
     let key = prefixed_api_key::parse(&*req.key)
@@ -29,10 +28,7 @@ pub async fn authenticate(state: Arc<RwLock<State>>, client_state: Arc<RwLock<Cl
         .context("could not query database for user")?;
     let mut user = match user {
         Some(u) => u,
-        None => {
-            util::send(conn, number, AuthenticateResponse::error("invalid key")).await?;
-            return Ok(());
-        }
+        None => return util::send(conn, number, AuthenticateResponse::error("invalid key")).await,
     };
 
     if Utc::now().naive_utc().signed_duration_since(user.last_updated) >= Duration::hours(2) {
@@ -59,6 +55,13 @@ pub async fn authenticate(state: Arc<RwLock<State>>, client_state: Arc<RwLock<Cl
 
     let world = World::from_str(&user.world).map_err(|_| anyhow::anyhow!("invalid world in db"))?;
 
+    if let Some(old_client_state) = state.read().await.clients.get(&(user.lodestone_id as u64)) {
+        let mut lock = old_client_state.write().await;
+        // this prevents the old client thread from removing info from the global state
+        lock.user = None;
+        lock.shutdown_tx.send(()).await.ok();
+    }
+
     trace!("  [authenticate] before user write");
     let mut c_state = client_state.write().await;
     c_state.user = Some(User {
@@ -81,7 +84,5 @@ pub async fn authenticate(state: Arc<RwLock<State>>, client_state: Arc<RwLock<Cl
     state.write().await.ids.insert((user.name, util::id_from_world(world)), user.lodestone_id as u64);
     trace!("  [authenticate] after state writes");
 
-    util::send(conn, number, AuthenticateResponse::success()).await?;
-
-    Ok(())
+    util::send(conn, number, AuthenticateResponse::success()).await
 }

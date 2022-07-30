@@ -256,6 +256,7 @@ async fn main() -> Result<()> {
 pub struct ClientState {
     user: Option<User>,
     tx: Sender<ResponseContainer>,
+    shutdown_tx: Sender<()>,
     pk: Vec<u8>,
     allow_invites: bool,
 }
@@ -340,10 +341,12 @@ impl ClientState {
 
 async fn client_loop(state: Arc<RwLock<State>>, mut conn: WsStream) -> Result<()> {
     let (tx, mut rx) = tokio::sync::mpsc::channel(10);
+    let (shutdown_tx, mut shutdown_rx) = tokio::sync::mpsc::channel(1);
 
     let client_state = Arc::new(RwLock::new(ClientState {
         user: None,
         tx,
+        shutdown_tx,
         pk: Default::default(),
         allow_invites: false,
     }));
@@ -351,6 +354,10 @@ async fn client_loop(state: Arc<RwLock<State>>, mut conn: WsStream) -> Result<()
     loop {
         let res: Result<()> = try {
             tokio::select! {
+                _ = shutdown_rx.recv() => {
+                    debug!("break due to new login");
+                    break;
+                }
                 msg = rx.recv() => {
                     if let Some(msg) = msg {
                         let encoded = rmp_serde::to_vec(&msg)?;
