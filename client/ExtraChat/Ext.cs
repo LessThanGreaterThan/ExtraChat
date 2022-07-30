@@ -16,19 +16,20 @@ public static class Ext {
     }
 
     public static async Task<ResponseContainer> ReceiveMessage(this ClientWebSocket client) {
-        var bytes = new ArraySegment<byte>(new byte[2048]);
+        var bytes = new List<byte>(2048);
+        var buffer = new ArraySegment<byte>(new byte[2048]);
 
         WebSocketReceiveResult result;
-        var i = 0;
         do {
-            result = await client.ReceiveAsync(bytes[i..], CancellationToken.None);
-            i += result.Count;
+            result = await client.ReceiveAsync(buffer, CancellationToken.None);
+            bytes.AddRange(buffer[..result.Count]);
 
-            if (i >= bytes.Count) {
+            // 1 MiB
+            if (bytes.Count > 1_048_576) {
                 throw new Exception();
             }
         } while (!result.EndOfMessage);
 
-        return MessagePackSerializer.Deserialize<ResponseContainer>(bytes[..i]);
+        return MessagePackSerializer.Deserialize<ResponseContainer>(bytes.ToArray());
     }
 }
