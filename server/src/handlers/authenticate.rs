@@ -4,7 +4,7 @@ use std::sync::Arc;
 use anyhow::Context;
 use chrono::{Duration, Utc};
 use lodestone_scraper::LodestoneScraper;
-use log::trace;
+use log::{trace, warn};
 use tokio::sync::RwLock;
 
 use crate::{AuthenticateRequest, AuthenticateResponse, ClientState, State, User, util, World, WsStream};
@@ -34,23 +34,30 @@ pub async fn authenticate(state: Arc<RwLock<State>>, client_state: Arc<RwLock<Cl
     if Utc::now().naive_utc().signed_duration_since(user.last_updated) >= Duration::hours(2) {
         let info = LodestoneScraper::default()
             .character(user.lodestone_id as u64)
-            .await
-            .context("could not get character info")?;
-        let world_name = info.world.as_str();
+            .await;
 
-        user.name = info.name.clone();
-        user.world = world_name.to_string();
+        match info {
+            Ok(info) => {
+                let world_name = info.world.as_str();
 
-        sqlx::query!(
-            // language=sqlite
-            "update users set name = ?, world = ?, last_updated = current_timestamp where lodestone_id = ?",
-            info.name,
-            world_name,
-            user.lodestone_id,
-        )
-            .execute(&state.read().await.db)
-            .await
-            .context("could not update user")?;
+                user.name = info.name.clone();
+                user.world = world_name.to_string();
+
+                sqlx::query!(
+                    // language=sqlite
+                    "update users set name = ?, world = ?, last_updated = current_timestamp where lodestone_id = ?",
+                    info.name,
+                    world_name,
+                    user.lodestone_id,
+                )
+                    .execute(&state.read().await.db)
+                    .await
+                    .context("could not update user")?;
+            }
+            Err(e) => {
+                warn!("could not get character info during login: {:#?}", e);
+            }
+        }
     }
 
     let world = World::from_str(&user.world).map_err(|_| anyhow::anyhow!("invalid world in db"))?;
