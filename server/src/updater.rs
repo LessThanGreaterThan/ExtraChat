@@ -37,7 +37,7 @@ pub fn spawn(state: Arc<RwLock<State>>) -> JoinHandle<()> {
 async fn inner(state: &RwLock<State>, lodestone: &LodestoneScraper) -> Result<HashMap<u32, Result<()>>> {
     let users = sqlx::query!(
         // language=sqlite
-        "select * from users where (julianday(current_timestamp) - julianday(last_updated)) * 24 >= 2",
+        "select * from users where (julianday(current_timestamp) - julianday(last_updated)) * 24 >= 2 order by last_updated",
     )
         .fetch_all(&state.read().await.db)
         .await
