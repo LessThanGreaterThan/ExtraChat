@@ -3,9 +3,9 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use lodestone_scraper::LodestoneScraper;
+use log::{debug, error, info, trace};
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
-use log::{error, info, trace};
 
 use crate::State;
 
@@ -44,8 +44,12 @@ async fn inner(state: &RwLock<State>, lodestone: &LodestoneScraper) -> Result<Ha
         .context("could not query database for users")?;
 
     let mut results = HashMap::with_capacity(users.len());
-    for user in users {
+    for (i, user) in users.iter().enumerate() {
         results.insert(user.lodestone_id as u32, update(state, lodestone, user.lodestone_id).await);
+        if i % 5 == 0 {
+            debug!("updated {}/{} users", i, users.len());
+        }
+
         tokio::time::sleep(std::time::Duration::from_secs(5)).await;
     }
 
