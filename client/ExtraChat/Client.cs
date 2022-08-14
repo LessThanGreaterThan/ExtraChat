@@ -963,7 +963,9 @@ internal class Client : IDisposable {
             output.Add(new PlayerPayload(resp.Sender, resp.World));
         }
 
-        if (!isSelf && resp.World != this.Plugin.LocalPlayer?.CurrentWorld.Id) {
+        var homeWorldsSame = resp.World == this.Plugin.LocalPlayer?.HomeWorld.Id;
+        var homeWorldsSameAndOnHomeWorld = homeWorldsSame && this.Plugin.LocalPlayer?.CurrentWorld.Id == resp.World;
+        if (!isSelf && !homeWorldsSameAndOnHomeWorld) {
             output.AddIcon(BitmapFontIcon.CrossWorld);
             var world = this.Plugin.DataManager.GetExcelSheet<World>()?.GetRow(resp.World)?.Name.ToDalamudString();
             if (world != null) {
