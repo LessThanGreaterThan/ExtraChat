@@ -5,3 +5,4 @@ description: |-
   to the game.
 punchline: 'Cross-data-centre linkshells with unlimited members.'
 repo_url: https://git.annaclemens.io/ascclemens/ExtraChat
+dalamud_api_level: 7
