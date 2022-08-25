@@ -13,9 +13,9 @@
       },
       "Dalamud.ContextMenu": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "YwqdkjEQKHW7VGGmWxhBwMpuN9twsLaO6Lm05uQ1LosN2iEKNLrAMB8LlUy8qqCojlrRnhiwece/Z6Ppvfgi6g=="
+        "requested": "[1.2.1, )",
+        "resolved": "1.2.1",
+        "contentHash": "RiBkn1OYRTnVbfUGYolLBE8MOeXjok+JiZaryb27oGa7YARCTu0XgUzkRiCglujknsHOn5kAaXsT3TUJmqMigg=="
       },
       "DalamudPackager": {
         "type": "Direct",

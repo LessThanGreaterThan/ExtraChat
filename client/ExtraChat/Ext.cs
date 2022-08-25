@@ -1,5 +1,4 @@
-﻿using System.Buffers;
-using System.Net.WebSockets;
+﻿using System.Net.WebSockets;
 using ExtraChat.Protocol;
 using MessagePack;
 
@@ -17,30 +16,19 @@ public static class Ext {
     }
 
     public static async Task<ResponseContainer> ReceiveMessage(this ClientWebSocket client) {
-        const int maxSize = 1_048_576;
-        // rent a 1 MiB byte array from the shared runtime pool
-        var bytes = ArrayPool<byte>.Shared.Rent(maxSize);
+        var bytes = new ArraySegment<byte>(new byte[2048]);
 
-        try {
-            WebSocketReceiveResult result;
-            var i = 0;
-            do {
-                result = await client.ReceiveAsync(bytes[i..maxSize], CancellationToken.None);
-                i += result.Count;
+        WebSocketReceiveResult result;
+        var i = 0;
+        do {
+            result = await client.ReceiveAsync(bytes[i..], CancellationToken.None);
+            i += result.Count;
 
-                // break if we've filled up the buffer, even if message isn't complete
-                if (i == maxSize) {
-                    break;
-                }
+            if (i >= bytes.Count) {
+                throw new Exception();
+            }
+        } while (!result.EndOfMessage);
 
-                if (i > maxSize) {
-                    throw new Exception("read too many bytes for one message");
-                }
-            } while (!result.EndOfMessage);
-
-            return MessagePackSerializer.Deserialize<ResponseContainer>(bytes);
-        } finally {
-            ArrayPool<byte>.Shared.Return(bytes);
-        }
+        return MessagePackSerializer.Deserialize<ResponseContainer>(bytes[..i]);
     }
 }
