@@ -936,6 +936,7 @@ internal class Client : IDisposable {
         }
 
         this.Plugin.Commands.ReregisterAll();
+        this.Plugin.Ipc.BroadcastChannelNames();
     }
 
     private void HandleMessage(MessageResponse resp) {
@@ -948,6 +949,9 @@ internal class Client : IDisposable {
         var message = SeString.Parse(SecretBox.Decrypt(info.SharedSecret, resp.Message));
 
         var output = new SeStringBuilder();
+        // add a tag payload for filtering
+        output.Add(PayloadUtil.CreateTagPayload(resp.Channel));
+        output.Add(RawPayload.LinkTerminator);
 
         var colour = config.GetUiColour(resp.Channel);
         output.AddUiForeground(colour);
