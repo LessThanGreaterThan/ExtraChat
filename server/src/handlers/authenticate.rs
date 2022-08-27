@@ -3,8 +3,7 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use chrono::{Duration, Utc};
-use lodestone_scraper::LodestoneScraper;
-use log::{trace, warn};
+use log::trace;
 use tokio::sync::RwLock;
 
 use crate::{AuthenticateRequest, AuthenticateResponse, ClientState, State, User, util, World, WsStream};
@@ -26,39 +25,10 @@ pub async fn authenticate(state: Arc<RwLock<State>>, client_state: Arc<RwLock<Cl
         .fetch_optional(&state.read().await.db)
         .await
         .context("could not query database for user")?;
-    let mut user = match user {
+    let user = match user {
         Some(u) => u,
         None => return util::send(conn, number, AuthenticateResponse::error("invalid key")).await,
     };
-
-    if Utc::now().naive_utc().signed_duration_since(user.last_updated) >= Duration::hours(2) {
-        let info = LodestoneScraper::default()
-            .character(user.lodestone_id as u64)
-            .await;
-
-        match info {
-            Ok(info) => {
-                let world_name = info.world.as_str();
-
-                user.name = info.name.clone();
-                user.world = world_name.to_string();
-
-                sqlx::query!(
-                    // language=sqlite
-                    "update users set name = ?, world = ?, last_updated = current_timestamp where lodestone_id = ?",
-                    info.name,
-                    world_name,
-                    user.lodestone_id,
-                )
-                    .execute(&state.read().await.db)
-                    .await
-                    .context("could not update user")?;
-            }
-            Err(e) => {
-                warn!("could not get character info during login: {:#?}", e);
-            }
-        }
-    }
 
     let world = World::from_str(&user.world).map_err(|_| anyhow::anyhow!("invalid world in db"))?;
 
@@ -90,6 +60,10 @@ pub async fn authenticate(state: Arc<RwLock<State>>, client_state: Arc<RwLock<Cl
     trace!("  [authenticate] before state write 2");
     state.write().await.ids.insert((user.name, util::id_from_world(world)), user.lodestone_id as u64);
     trace!("  [authenticate] after state writes");
+
+    if Utc::now().naive_utc().signed_duration_since(user.last_updated) >= Duration::hours(2) {
+        state.read().await.updater_tx.send(user.lodestone_id).ok();
+    }
 
     util::send(conn, number, AuthenticateResponse::success()).await
 }

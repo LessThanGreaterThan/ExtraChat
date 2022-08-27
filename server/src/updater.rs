@@ -1,59 +1,45 @@
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{
+    sync::Arc,
+    time::Duration,
+};
 
 use anyhow::{Context, Result};
 use lodestone_scraper::LodestoneScraper;
-use log::{debug, error, info, trace};
-use tokio::sync::RwLock;
-use tokio::task::JoinHandle;
+use log::{debug, error, trace};
+use tokio::{
+    sync::{
+        mpsc::UnboundedReceiver,
+        RwLock,
+    },
+    task::JoinHandle,
+    time::Instant,
+};
 
 use crate::State;
 
-pub fn spawn(state: Arc<RwLock<State>>) -> JoinHandle<()> {
+pub fn spawn(state: Arc<RwLock<State>>, mut rx: UnboundedReceiver<i64>) -> JoinHandle<()> {
+    const WAIT_TIME: u64 = 5;
+
     tokio::task::spawn(async move {
         let lodestone = LodestoneScraper::default();
 
-        loop {
-            match inner(&state, &lodestone).await {
-                Ok(results) => {
-                    let successful = results.values().filter(|result| result.is_ok()).count();
-                    info!("Updated {}/{} characters", successful, results.len());
-                    for (id, result) in results {
-                        if let Err(e) = result {
-                            error!("error updating user {}: {:?}", id, e);
-                        }
-                    }
-                }
-                Err(e) => {
-                    error!("error updating users: {:?}", e);
-                }
+        let mut last_update = Instant::now();
+        while let Some(id) = rx.recv().await {
+            // make sure to wait five seconds between each request
+            let elapsed = last_update.elapsed();
+            if elapsed < Duration::from_secs(WAIT_TIME) {
+                let left = Duration::from_secs(WAIT_TIME) - elapsed;
+                tokio::time::sleep(left).await;
             }
 
-            tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+            match update(&*state, &lodestone, id).await {
+                Ok(()) => debug!("updated user {}", id),
+                Err(e) => error!("error updating user {}: {:?}", id, e),
+            }
+
+            last_update = Instant::now();
         }
     })
-}
-
-async fn inner(state: &RwLock<State>, lodestone: &LodestoneScraper) -> Result<HashMap<u32, Result<()>>> {
-    let users = sqlx::query!(
-        // language=sqlite
-        "select * from users where (julianday(current_timestamp) - julianday(last_updated)) * 24 >= 2 order by last_updated",
-    )
-        .fetch_all(&state.read().await.db)
-        .await
-        .context("could not query database for users")?;
-
-    let mut results = HashMap::with_capacity(users.len());
-    for (i, user) in users.iter().enumerate() {
-        results.insert(user.lodestone_id as u32, update(state, lodestone, user.lodestone_id).await);
-        if i % 5 == 0 {
-            debug!("updated {}/{} users", i, users.len());
-        }
-
-        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-    }
-
-    Ok(results)
 }
 
 async fn update(state: &RwLock<State>, lodestone: &LodestoneScraper, lodestone_id: i64) -> Result<()> {

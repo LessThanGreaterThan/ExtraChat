@@ -17,7 +17,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use tokio::{
     net::{TcpListener, TcpStream},
 };
-use tokio::sync::mpsc::Sender;
+use tokio::sync::mpsc::{Sender, UnboundedSender};
 use tokio::sync::RwLock;
 use tokio_tungstenite::{
     tungstenite::Message as WsMessage,
@@ -59,6 +59,7 @@ pub struct State {
     pub ids: HashMap<(String, u16), u64>,
     pub secrets_requests: HashMap<Uuid, SecretsRequestInfo>,
     pub messages_sent: AtomicU64,
+    pub updater_tx: UnboundedSender<i64>,
 }
 
 impl State {
@@ -126,6 +127,9 @@ async fn main() -> Result<()> {
         .await
         .context("could not run database migrations")?;
 
+    // set up updater channel
+    let (updater_tx, updater_rx) = tokio::sync::mpsc::unbounded_channel();
+
     // set up server
     let server = TcpListener::bind(&config.server.address).await?;
     let state = Arc::new(RwLock::new(State {
@@ -134,6 +138,7 @@ async fn main() -> Result<()> {
         ids: Default::default(),
         secrets_requests: Default::default(),
         messages_sent: AtomicU64::default(),
+        updater_tx,
     }));
 
     info!("Listening on ws://{}/", server.local_addr()?);
@@ -211,7 +216,7 @@ async fn main() -> Result<()> {
 
     influx::spawn(&config, Arc::clone(&state));
 
-    updater::spawn(Arc::clone(&state));
+    updater::spawn(Arc::clone(&state), updater_rx);
 
     loop {
         let res: Result<()> = try {
