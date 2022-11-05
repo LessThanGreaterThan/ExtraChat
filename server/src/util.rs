@@ -172,6 +172,10 @@ pub fn id_from_world(world: World) -> u16 {
         World::Phantom => 401,
         World::Alpha => 402,
         World::Raiden => 403,
+        World::Marilith => 404,
+        World::Seraph => 405,
+        World::Halicarnassus => 406,
+        World::Maduin => 407,
     }
 }
 
@@ -254,6 +258,10 @@ pub fn world_from_id(id: u16) -> Option<World> {
         401 => World::Phantom,
         402 => World::Alpha,
         403 => World::Raiden,
+        404 => World::Marilith,
+        405 => World::Seraph,
+        406 => World::Halicarnassus,
+        407 => World::Maduin,
         _ => return None,
     };
 

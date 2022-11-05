@@ -147,7 +147,14 @@ async fn main() -> Result<()> {
     let (announce_tx, mut announce_rx) = tokio::sync::mpsc::channel(1);
 
     std::thread::spawn(move || {
-        let mut editor = rustyline::Editor::<()>::new();
+        let mut editor = match rustyline::Editor::<()>::new() {
+            Ok(e) => e,
+            Err(e) => {
+                error!("error creating line editor: {:#?}", e);
+                return;
+            }
+        };
+
         for line in editor.iter("> ") {
             let line = match line {
                 Ok(l) => l,
