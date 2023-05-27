@@ -4,33 +4,34 @@
     "net7.0-windows7.0": {
       "ASodium": {
         "type": "Direct",
-        "requested": "[0.5.4, )",
-        "resolved": "0.5.4",
-        "contentHash": "wNPpNTVtdYkOd6DYVdoL6lQ4A5aDK8tu7ouzP4fu5XzeJelQwtrpfKLd+HKO7OmvOF5VLxamlCDvKn+tiHilmA==",
+        "requested": "[0.5.6, )",
+        "resolved": "0.5.6",
+        "contentHash": "8D/bw3Waui2GX/m8pU1FEXhQpKsiB9PRMcQsK0OQ34jZOk1kEatDQBvyiciBuk1SOQ/tI1nMEFXMWv93D5YnBg==",
         "dependencies": {
           "libsodium": "1.0.18.4"
         }
       },
       "Dalamud.ContextMenu": {
         "type": "Direct",
-        "requested": "[1.2.1, )",
-        "resolved": "1.2.1",
-        "contentHash": "RiBkn1OYRTnVbfUGYolLBE8MOeXjok+JiZaryb27oGa7YARCTu0XgUzkRiCglujknsHOn5kAaXsT3TUJmqMigg=="
+        "requested": "[1.2.3, )",
+        "resolved": "1.2.3",
+        "contentHash": "ydemplF7DNcA/LLeongDVzWUD/JV0Fw3EwA2+P0jYq3Le2ZYSt4U8qyJq4FyoChqt0lFG8BxYCAzfeWp4Jmnqw=="
       },
       "DalamudPackager": {
         "type": "Direct",
-        "requested": "[2.1.10, )",
-        "resolved": "2.1.10",
-        "contentHash": "S6NrvvOnLgT4GDdgwuKVJjbFo+8ZEj+JsEYk9ojjOR/MMfv1dIFpT8aRJQfI24rtDcw1uF+GnSSMN4WW1yt7fw=="
+        "requested": "[2.1.11, )",
+        "resolved": "2.1.11",
+        "contentHash": "9qlAWoRRTiL/geAvuwR/g6Bcbrd/bJJgVnB/RurBiyKs6srsP0bvpoo8IK+Eg8EA6jWeM6/YJWs66w4FIAzqPw=="
       },
       "MessagePack": {
         "type": "Direct",
-        "requested": "[2.4.59, )",
-        "resolved": "2.4.59",
-        "contentHash": "bj1NsZu4SckIIHxZcLc3+S64MiDRm+YlQi9MDsA+dt6x/QNiELftDQ9VQ88n3sgRzaniMqgfzO9pHXGoxcsKCQ==",
+        "requested": "[2.5.108, )",
+        "resolved": "2.5.108",
+        "contentHash": "kcVRbdWP3xNWLZmmpm4DFO+kuXf6mUR2mHZ27WoZIEFIv9hazuUd80injXhNrZnlq/FklAdCsLOil5M76I4Ndg==",
         "dependencies": {
-          "MessagePack.Annotations": "2.4.59",
-          "Microsoft.NET.StringTools": "17.4.0"
+          "MessagePack.Annotations": "2.5.108",
+          "Microsoft.NET.StringTools": "17.4.0",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         }
       },
       "System.Net.WebSockets.Client": {
@@ -80,8 +81,8 @@
       },
       "MessagePack.Annotations": {
         "type": "Transitive",
-        "resolved": "2.4.59",
-        "contentHash": "3I1OxkqjiL0QEHnEJCia5TOeQuqVpYmNbprdw9uyIRXniei01ElWTS7Qcte+ionHM0KYiPWYhXQFJIeYb5Hbrg=="
+        "resolved": "2.5.108",
+        "contentHash": "28aNCvfJClgwaKr26gf2S6LT+C1PNyPxiG+ihYpy8uCJsRLJEDoCt2I0Uk5hqOPQ8P8hI0ESy520oMkZkPmsOQ=="
       },
       "Microsoft.NET.StringTools": {
         "type": "Transitive",
