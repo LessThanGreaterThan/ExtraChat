@@ -57,15 +57,13 @@ pub async fn register(state: Arc<RwLock<State>>, _client_state: Arc<RwLock<Clien
 
                 sqlx::query!(
                     // language=sqlite
-                    "delete from verifications where lodestone_id = ?",
-                    lodestone_id,
-                )
-                    .execute(&state.read().await.db)
-                    .await?;
-
-                sqlx::query!(
-                    // language=sqlite
-                    "insert into verifications (lodestone_id, challenge) values (?, ?)",
+                    "
+                        insert into verifications (lodestone_id, challenge)
+                        values (?1, ?2)
+                        on conflict (lodestone_id)
+                            do update set challenge  = ?2,
+                                          created_at = current_timestamp
+                    ",
                     lodestone_id,
                     challenge,
                 )
@@ -116,7 +114,16 @@ pub async fn register(state: Arc<RwLock<State>>, _client_state: Arc<RwLock<Clien
     let world_name = character.world.as_str();
     sqlx::query!(
         // language=sqlite
-        "insert or replace into users (lodestone_id, name, world, key_short, key_hash, last_updated) values (?, ?, ?, ?, ?, current_timestamp)",
+        "
+            insert into users (lodestone_id, name, world, key_short, key_hash, last_updated)
+            values (?1, ?2, ?3, ?4, ?5, current_timestamp)
+            on conflict (lodestone_id)
+                do update set name         = ?2,
+                              world        = ?3,
+                              key_short    = ?4,
+                              key_hash     = ?5,
+                              last_updated = current_timestamp
+        ",
         lodestone_id,
         character.name,
         world_name,

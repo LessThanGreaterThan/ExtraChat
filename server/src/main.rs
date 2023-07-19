@@ -14,9 +14,7 @@ use sha3::Digest;
 use sqlx::{ConnectOptions, Executor, Pool, Sqlite};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
-use tokio::{
-    net::{TcpListener, TcpStream},
-};
+use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::mpsc::{Sender, UnboundedSender};
 use tokio::sync::RwLock;
 use tokio_tungstenite::{
