@@ -10,6 +10,7 @@ use anyhow::{Context, Result};
 use futures_util::{SinkExt, StreamExt};
 use lodestone_scraper::lodestone_parser::ffxiv_types::World;
 use log::{debug, error, info, Level, LevelFilter, warn};
+use rustyline::history::DefaultHistory;
 use sha3::Digest;
 use sqlx::{ConnectOptions, Executor, Pool, Sqlite};
 use sqlx::migrate::Migrator;
@@ -107,8 +108,9 @@ async fn main() -> Result<()> {
         .context("couldn't parse config file")?;
 
     // set up database pool
-    let mut options = SqliteConnectOptions::new();
-    options.log_statements(LevelFilter::Debug);
+    let options = SqliteConnectOptions::new()
+        .log_statements(LevelFilter::Debug)
+        .filename(&config.database.path);
 
     let pool = SqlitePoolOptions::new()
         .after_connect(|conn, _| Box::pin(async move {
@@ -118,7 +120,7 @@ async fn main() -> Result<()> {
             ).await?;
             Ok(())
         }))
-        .connect_with(options.filename(&config.database.path))
+        .connect_with(options)
         .await
         .context("could not connect to database")?;
     MIGRATOR.run(&pool)
@@ -145,7 +147,7 @@ async fn main() -> Result<()> {
     let (announce_tx, mut announce_rx) = tokio::sync::mpsc::channel(1);
 
     std::thread::spawn(move || {
-        let mut editor = match rustyline::Editor::<()>::new() {
+        let mut editor = match rustyline::Editor::<(), DefaultHistory>::new() {
             Ok(e) => e,
             Err(e) => {
                 error!("error creating line editor: {:#?}", e);

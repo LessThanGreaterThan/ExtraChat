@@ -12,22 +12,22 @@ fern = "0.6"
 futures-util = "0.3"
 hex = "0.4"
 lazy_static = "1"
-lodestone-scraper = { git = "https://git.annaclemens.io/ascclemens/lodestone-scraper.git" }
+lodestone-scraper = { git = "https://git.anna.lgbt/ascclemens/lodestone-scraper.git" }
 log = "0.4"
 parking_lot = "0.12"
-prefixed-api-key = { git = "https://git.annaclemens.io/ascclemens/prefixed-api-key.git" }
+prefixed-api-key = { git = "https://git.anna.lgbt/ascclemens/prefixed-api-key.git" }
 rand = "0.8"
 regex = "1"
 reqwest = { version = "0.11", default-features = false }
 rmp-serde = "1"
-rustyline = { version = "10", default-features = false }
+rustyline = { version = "12", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
 serde_repr = "0.1"
 sha3 = "0.10"
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
-tokio-tungstenite = "0.17"
-toml = "0.5"
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
+tokio-tungstenite = "0.19"
+toml = "0.7"
 url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 
