@@ -1,9 +1,9 @@
 name: ExtraChat
-author: ascclemens
+author: Anna
 description: |-
   ExtraChat adds end-to-end encrypted, cross-data-centre, unlimited linkshells
   to the game.
 punchline: 'Cross-data-centre linkshells with unlimited members.'
-repo_url: https://git.annaclemens.io/ascclemens/ExtraChat
+repo_url: https://git.anna.lgbt/anna/ExtraChat
 accepts_feedback: false
-feedback_message: Submit only bugs to https://github.com/ascclemens/plugin-issues
+feedback_message: Submit only bugs to https://github.com/lojewalo/plugin-issues
