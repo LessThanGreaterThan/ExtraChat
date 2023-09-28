@@ -7,7 +7,6 @@ using ASodium;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Logging;
 using Dalamud.Utility;
 using ExtraChat.Protocol;
 using ExtraChat.Protocol.Channels;
@@ -72,11 +71,11 @@ internal class Client : IDisposable {
         this._waitersSemaphore.Dispose();
     }
 
-    private void Login(object? sender, EventArgs e) {
+    private void Login() {
         this.StartLoop();
     }
 
-    private void Logout(object? sender, EventArgs e) {
+    private void Logout() {
         this.StopLoop();
     }
 
@@ -98,9 +97,9 @@ internal class Client : IDisposable {
                 try {
                     await this.Loop();
                 } catch (Exception ex) {
-                    PluginLog.LogError(ex, "Error in client loop");
+                    Plugin.Log.Error(ex, "Error in client loop");
                     if (this._wasConnected) {
-                        this.Plugin.ChatGui.PrintChat(new XivChatEntry {
+                        this.Plugin.ChatGui.Print(new XivChatEntry {
                             Message = "Disconnected from ExtraChat. Trying to reconnect.",
                             Type = XivChatType.Urgent,
                         });
@@ -164,7 +163,7 @@ internal class Client : IDisposable {
 
             if (await this.Authenticate()) {
                 this._wasConnected = true;
-                this.Plugin.ChatGui.PrintChat(new XivChatEntry {
+                this.Plugin.ChatGui.Print(new XivChatEntry {
                     Message = "Connected to ExtraChat.",
                     Type = XivChatType.Notice,
                 });
@@ -663,7 +662,7 @@ internal class Client : IDisposable {
     #pragma warning restore CS4014
 
     private void HandleAnnounce(AnnounceResponse resp) {
-        this.Plugin.ChatGui.PrintChat(new XivChatEntry {
+        this.Plugin.ChatGui.Print(new XivChatEntry {
             Type = XivChatType.Notice,
             Message = $"[ExtraChat] {resp.Announcement}",
         });
@@ -706,7 +705,7 @@ internal class Client : IDisposable {
                 break;
             }
             default: {
-                PluginLog.LogWarning($"Unhandled update kind: {resp.Kind}");
+                Plugin.Log.Warning($"Unhandled update kind: {resp.Kind}");
                 break;
             }
         }
@@ -993,7 +992,7 @@ internal class Client : IDisposable {
             outputChannel = XivChatType.Debug;
         }
 
-        this.Plugin.ChatGui.PrintChat(new XivChatEntry {
+        this.Plugin.ChatGui.Print(new XivChatEntry {
             Message = output.Build(),
             Name = isSelf
                 ? resp.Sender

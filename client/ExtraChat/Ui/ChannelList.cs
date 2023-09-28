@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text;
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using ExtraChat.Protocol;
 using ExtraChat.Protocol.Channels;
 using ExtraChat.Util;
@@ -40,10 +41,10 @@ internal class ChannelList {
 
         var syncButton = ImGui.CalcTextSize(FontAwesomeIcon.Sync.ToIconString()).X
                          + ImGui.GetStyle().FramePadding.X * 2;
-        // PluginLog.Log($"syncButton: {syncButton}");
+        // Plugin.Log.Info($"syncButton: {syncButton}");
         var addButton = ImGui.CalcTextSize(FontAwesomeIcon.Plus.ToIconString()).X
                         + ImGui.GetStyle().FramePadding.X * 2;
-        // PluginLog.Log($"addButton: {addButton}");
+        // Plugin.Log.Info($"addButton: {addButton}");
         var syncOffset = ImGui.GetContentRegionAvail().X - syncButton;
         var addOffset = ImGui.GetContentRegionAvail().X - syncButton - ImGui.GetStyle().ItemSpacing.X - addButton;
         ImGui.SameLine(syncOffset);

@@ -1,17 +1,12 @@
 ﻿using ASodium;
 using Dalamud.ContextMenu;
-using Dalamud.Data;
-using Dalamud.Game;
-using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
-using Dalamud.Game.Gui.Toast;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Internal.Notifications;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using ExtraChat.Integrations;
 using ExtraChat.Ui;
 using ExtraChat.Util;
@@ -20,40 +15,45 @@ namespace ExtraChat;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class Plugin : IDalamudPlugin {
-    internal const string PluginName = "ExtraChat";
     internal const ushort DefaultColour = 578;
 
-    public string Name => PluginName;
+    internal static string Name => "ExtraChat";
+
+    [PluginService]
+    internal static IPluginLog Log { get; private set; }
 
     [PluginService]
     internal DalamudPluginInterface Interface { get; init; }
 
     [PluginService]
-    internal ClientState ClientState { get; init; }
+    internal IClientState ClientState { get; init; }
 
     [PluginService]
-    internal CommandManager CommandManager { get; init; }
+    internal ICommandManager CommandManager { get; init; }
 
     [PluginService]
-    internal ChatGui ChatGui { get; init; }
+    internal IChatGui ChatGui { get; init; }
 
     [PluginService]
-    internal DataManager DataManager { get; init; }
+    internal IDataManager DataManager { get; init; }
 
     [PluginService]
-    internal Framework Framework { get; init; }
+    internal IFramework Framework { get; init; }
 
     [PluginService]
-    internal GameGui GameGui { get; init; }
+    internal IGameGui GameGui { get; init; }
 
     [PluginService]
-    internal ObjectTable ObjectTable { get; init; }
+    internal IObjectTable ObjectTable { get; init; }
 
     [PluginService]
-    internal TargetManager TargetManager { get; init; }
+    internal ITargetManager TargetManager { get; init; }
 
     [PluginService]
-    private ToastGui ToastGui { get; init; }
+    internal IGameInteropProvider GameInteropProvider { get; init; }
+
+    [PluginService]
+    private IToastGui ToastGui { get; init; }
 
     internal Configuration Config { get; }
     internal ConfigInfo ConfigInfo => this.Config.GetConfig(this.ClientState.LocalContentId);
@@ -120,7 +120,7 @@ public class Plugin : IDalamudPlugin {
         this.ContextMenu.Dispose();
     }
 
-    private void FrameworkUpdate(Framework framework) {
+    private void FrameworkUpdate(IFramework framework) {
         if (this.ClientState.LocalPlayer is { } player) {
             this.LocalPlayer = player;
         } else if (!this.ClientState.IsLoggedIn) {
@@ -173,10 +173,10 @@ public class Plugin : IDalamudPlugin {
         if (this.Config.UseNativeToasts) {
             this.ToastGui.ShowNormal(message);
         } else {
-            this.Interface.UiBuilder.AddNotification(message, this.Name, NotificationType.Info);
+            this.Interface.UiBuilder.AddNotification(message, Name, NotificationType.Info);
         }
 
-        this.ChatGui.PrintChat(new XivChatEntry {
+        this.ChatGui.Print(new XivChatEntry {
             Type = XivChatType.SystemMessage,
             Message = message,
         });
@@ -186,10 +186,10 @@ public class Plugin : IDalamudPlugin {
         if (this.Config.UseNativeToasts) {
             this.ToastGui.ShowError(message);
         } else {
-            this.Interface.UiBuilder.AddNotification(message, this.Name, NotificationType.Error);
+            this.Interface.UiBuilder.AddNotification(message, Name, NotificationType.Error);
         }
 
-        this.ChatGui.PrintChat(new XivChatEntry {
+        this.ChatGui.Print(new XivChatEntry {
             Type = XivChatType.ErrorMessage,
             Message = message,
         });

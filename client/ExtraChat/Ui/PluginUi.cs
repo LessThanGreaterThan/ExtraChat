@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Threading.Channels;
 using Dalamud;
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using Dalamud.Plugin;
 using ExtraChat.Protocol.Channels;
 using ExtraChat.Util;
@@ -77,7 +78,7 @@ internal class PluginUi : IDisposable {
 
         ImGui.SetNextWindowSize(new Vector2(500, 325) * ImGuiHelpers.GlobalScale, ImGuiCond.FirstUseEver);
 
-        if (!ImGui.Begin(this.Plugin.Name, ref this.Visible)) {
+        if (!ImGui.Begin(Plugin.Name, ref this.Visible)) {
             ImGui.End();
             return;
         }

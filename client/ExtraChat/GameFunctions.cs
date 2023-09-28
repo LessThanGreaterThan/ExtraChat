@@ -2,7 +2,6 @@
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Hooking;
-using Dalamud.Logging;
 using Dalamud.Memory;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -89,8 +88,8 @@ internal unsafe class GameFunctions : IDisposable {
     private bool _shouldForceNameLookup;
 
     internal GameFunctions(Plugin plugin) {
-        SignatureHelper.Initialise(this);
         this.Plugin = plugin;
+        this.Plugin.GameInteropProvider.InitializeFromAttributes(this);
 
         this.SendMessageHook!.Enable();
         this.SetChatChannelHook!.Enable();
@@ -158,7 +157,7 @@ internal unsafe class GameFunctions : IDisposable {
                 this.SendMessageHook.Original(a1, message, a3);
             }
         } catch (Exception ex) {
-            PluginLog.LogError(ex, "Error in message detour");
+            Plugin.Log.Error(ex, "Error in message detour");
         }
     }
 
@@ -272,7 +271,7 @@ internal unsafe class GameFunctions : IDisposable {
                 }
             }
         } catch (Exception ex) {
-            PluginLog.LogError(ex, "Error in get chat colour detour");
+            Plugin.Log.Error(ex, "Error in get chat colour detour");
         }
 
         return this.GetChatColourHook.Original(a1, a2);

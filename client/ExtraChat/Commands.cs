@@ -1,5 +1,4 @@
 using Dalamud.Game.Command;
-using Dalamud.Logging;
 using ExtraChat.Util;
 
 namespace ExtraChat;
@@ -23,7 +22,7 @@ internal class Commands : IDisposable {
         this.RegisterAll();
     }
 
-    private void OnLogout(object? sender, EventArgs e) {
+    private void OnLogout() {
         this.UnregisterAll();
     }
 
@@ -74,7 +73,7 @@ internal class Commands : IDisposable {
         this.RegisteredInternal[command] = id;
 
         void Handler(string _, string arguments) {
-            PluginLog.LogWarning("Command handler actually invoked");
+            Plugin.Log.Warning("Command handler actually invoked");
         }
 
         this.Plugin.CommandManager.AddHandler(command, new CommandInfo(Handler) {
