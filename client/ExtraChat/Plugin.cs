@@ -85,7 +85,7 @@ public class Plugin : IDalamudPlugin {
     public Plugin() {
         SodiumInit.Init();
         WorldUtil.Initialise(this.DataManager!);
-        this.ContextMenu = new DalamudContextMenu();
+        this.ContextMenu = new DalamudContextMenu(this.Interface);
         this.Config = this.Interface!.GetPluginConfig() as Configuration ?? new Configuration();
         this.Client = new Client(this);
         this.Commands = new Commands(this);
