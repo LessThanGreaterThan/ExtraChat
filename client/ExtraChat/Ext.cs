@@ -16,7 +16,7 @@ public static class Ext {
     }
 
     public static async Task<ResponseContainer> ReceiveMessage(this ClientWebSocket client) {
-        var bytes = new ArraySegment<byte>(new byte[2048]);
+        var bytes = new ArraySegment<byte>(new byte[64 * 1024]);
 
         WebSocketReceiveResult result;
         var i = 0;
