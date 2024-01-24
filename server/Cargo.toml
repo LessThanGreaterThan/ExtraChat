@@ -20,14 +20,14 @@ rand = "0.8"
 regex = "1"
 reqwest = { version = "0.11", default-features = false }
 rmp-serde = "1"
-rustyline = { version = "12", default-features = false }
+rustyline = { version = "13", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
 serde_repr = "0.1"
 sha3 = "0.10"
 sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
-tokio-tungstenite = "0.19"
-toml = "0.7"
+tokio-tungstenite = "0.21"
+toml = "0.8"
 url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 

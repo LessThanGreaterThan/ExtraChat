@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use chrono::{DateTime, Duration, Utc};
+use chrono::{Duration, TimeZone, Utc};
 use lodestone_scraper::LodestoneScraper;
 use rand::RngCore;
 use tokio::sync::RwLock;
@@ -15,15 +15,28 @@ pub async fn register(state: Arc<RwLock<State>>, _client_state: Arc<RwLock<Clien
         .context("invalid world id")?;
 
     // look up character
-    let character = scraper.character_search()
-        .name(&req.name)
-        .world(world)
-        .send()
-        .await?
-        .results
-        .into_iter()
-        .find(|c| c.name == req.name && Some(c.world) == world_from_id(req.world))
-        .context("could not find character")?;
+    let mut page = 1;
+    let character = loop {
+        let search = scraper.character_search()
+            .name(&req.name)
+            .world(world)
+            .page(page)
+            .send()
+            .await?;
+        let chara = search
+            .results
+            .into_iter()
+            .find(|c| c.name == req.name && Some(c.world) == world_from_id(req.world));
+        if chara.is_some() {
+            break chara;
+        }
+
+        page += 1;
+        if page > search.pagination.total_pages {
+            break None;
+        }
+    };
+    let character = character.context("could not find character")?;
     let lodestone_id = character.id as i64;
 
     // get challenge
@@ -38,7 +51,7 @@ pub async fn register(state: Arc<RwLock<State>>, _client_state: Arc<RwLock<Clien
 
     if !req.challenge_completed || challenge.is_none() {
         let generate = match &challenge {
-            Some(r) if Utc::now().signed_duration_since(DateTime::<Utc>::from_utc(r.created_at, Utc)) > Duration::minutes(5) => {
+            Some(r) if Utc::now().signed_duration_since(Utc.from_utc_datetime(&r.created_at)) > Duration::minutes(5) => {
                 // set up a challenge if one hasn't been set up in the last five minutes
                 true
             }

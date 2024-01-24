@@ -73,7 +73,9 @@ pub fn spawn(config: &Config, state: Arc<RwLock<State>>) {
                 .await
                 .ok();
 
-            let timestamp = Utc::now().timestamp_nanos();
+            let timestamp = Utc::now()
+                .timestamp_nanos_opt()
+                .unwrap_or_default();
 
             let mut line_format = format!(
                 "logged_in value={logged_in}u {timestamp}\nmessages_this_instance value={messages_this_instance}u {timestamp}\nmessages_new value={messages_new}u {timestamp}\n",
