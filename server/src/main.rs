@@ -50,6 +50,9 @@ pub mod updater;
 pub mod logging;
 pub mod influx;
 
+#[global_allocator]
+static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 pub type WsStream = WebSocketStream<TcpStream>;
 
 pub struct State {
