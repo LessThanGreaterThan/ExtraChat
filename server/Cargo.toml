@@ -14,13 +14,14 @@ hex = "0.4"
 lazy_static = "1"
 lodestone-scraper = { git = "https://git.anna.lgbt/anna/lodestone-scraper.git" }
 log = "0.4"
+mimalloc = "0.1"
 parking_lot = "0.12"
 prefixed-api-key = { git = "https://git.anna.lgbt/anna/prefixed-api-key.git" }
 rand = "0.8"
 regex = "1"
-reqwest = { version = "0.11", default-features = false }
+reqwest = { version = "0.12", default-features = false }
 rmp-serde = "1"
-rustyline = { version = "13", default-features = false }
+rustyline = { version = "14", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
 serde_repr = "0.1"
