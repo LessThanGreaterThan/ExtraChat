@@ -32,7 +32,7 @@ pub fn spawn(state: Arc<RwLock<State>>, mut rx: UnboundedReceiver<i64>) -> JoinH
                 tokio::time::sleep(left).await;
             }
 
-            match update(&*state, &lodestone, id).await {
+            match update(&state, &lodestone, id).await {
                 Ok(()) => debug!("updated user {}", id),
                 Err(e) => error!("error updating user {}: {:?}", id, e),
             }
@@ -66,7 +66,7 @@ async fn update(state: &RwLock<State>, lodestone: &LodestoneScraper, lodestone_i
     if let Some(user) = client_state {
         trace!("  [updater] before user write");
         if let Some(user) = user.write().await.user.as_mut() {
-            user.name = info.name.clone();
+            user.name = info.name;
             user.world = info.world;
         }
         trace!("  [updater] after user write");

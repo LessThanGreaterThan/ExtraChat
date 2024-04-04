@@ -9,7 +9,7 @@ use crate::util::send;
 
 pub async fn disband(state: Arc<RwLock<State>>, client_state: Arc<RwLock<ClientState>>, conn: &mut WsStream, number: u32, req: DisbandRequest) -> Result<()> {
     match client_state.read().await.get_rank(req.channel, &state).await? {
-        Some(rank) if rank == Rank::Admin => {}
+        Some(Rank::Admin) => {}
         _ => return send(conn, number, ErrorResponse::new(req.channel, "not in channel/not enough permissions")).await,
     }
 

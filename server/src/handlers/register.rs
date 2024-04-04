@@ -66,7 +66,7 @@ pub async fn register(state: Arc<RwLock<State>>, _client_state: Arc<RwLock<Clien
             None | Some(_) if generate => {
                 let mut rand_bytes = [0; 32];
                 rand::thread_rng().fill_bytes(&mut rand_bytes);
-                let challenge = hex::encode(&rand_bytes);
+                let challenge = hex::encode(rand_bytes);
 
                 sqlx::query!(
                     // language=sqlite
