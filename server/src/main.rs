@@ -177,7 +177,7 @@ async fn main() -> Result<()> {
                     quit_tx.blocking_send(()).ok();
                     return;
                 }
-                "announce" => {
+                "announce" | "say" => {
                     if command.len() == 2 {
                         let msg = command[1].to_string();
                         announce_tx.blocking_send(msg).ok();
