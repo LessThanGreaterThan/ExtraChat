@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -11,7 +13,7 @@ pub struct Config {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Server {
-    pub address: String,
+    pub path: PathBuf,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

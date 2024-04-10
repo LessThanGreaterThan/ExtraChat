@@ -15,7 +15,7 @@ use sha3::Digest;
 use sqlx::{ConnectOptions, Executor, Pool, Sqlite};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::{UnixListener, UnixStream};
 use tokio::sync::mpsc::{Sender, UnboundedSender};
 use tokio::sync::RwLock;
 use tokio_tungstenite::{
@@ -24,19 +24,17 @@ use tokio_tungstenite::{
 };
 use uuid::Uuid;
 
-use crate::{
-    types::{
-        protocol::{
-            MessageRequest,
-            MessageResponse,
-            RegisterRequest,
-            RegisterResponse,
-            RequestContainer,
-            RequestKind,
-            ResponseContainer,
-        },
-        user::User,
+use crate::types::{
+    protocol::{
+        MessageRequest,
+        MessageResponse,
+        RegisterRequest,
+        RegisterResponse,
+        RequestContainer,
+        RequestKind,
+        ResponseContainer,
     },
+    user::User,
 };
 use crate::handlers::SecretsRequestInfo;
 use crate::types::config::Config;
@@ -53,7 +51,7 @@ pub mod influx;
 #[global_allocator]
 static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-pub type WsStream = WebSocketStream<TcpStream>;
+pub type WsStream = WebSocketStream<UnixStream>;
 
 pub struct State {
     pub db: Pool<Sqlite>,
@@ -134,7 +132,7 @@ async fn main() -> Result<()> {
     let (updater_tx, updater_rx) = tokio::sync::mpsc::unbounded_channel();
 
     // set up server
-    let server = TcpListener::bind(&config.server.address).await?;
+    let server = UnixListener::bind(&config.server.path)?;
     let state = Arc::new(RwLock::new(State {
         db: pool,
         clients: Default::default(),
@@ -144,7 +142,12 @@ async fn main() -> Result<()> {
         updater_tx,
     }));
 
-    info!("Listening on ws://{}/", server.local_addr()?);
+    let listening_on = server.local_addr()
+        .ok()
+        .and_then(|addr| addr.as_pathname().map(ToOwned::to_owned))
+        .and_then(|addr| addr.to_str().map(ToOwned::to_owned))
+        .unwrap_or_else(|| config.server.path.to_string_lossy().to_string());
+    info!("Listening on ws://unix:{listening_on}/");
 
     let (quit_tx, mut quit_rx) = tokio::sync::mpsc::channel(1);
     let (announce_tx, mut announce_rx) = tokio::sync::mpsc::channel(1);
