@@ -23,10 +23,10 @@ internal unsafe class GameFunctions : IDisposable {
     [Signature("4D 85 C0 74 08 45 8B C1")]
     private readonly delegate* unmanaged<PronounModule*, Utf8String*, ulong, uint, Utf8String*> _resolvePayloads;
 
-    // [Signature("E8 ?? ?? ?? ?? 48 8B D0 48 8D 4D E0 E8 ?? ?? ?? ?? 41 B0 01")]
+    // [Signature("E8 ?? ?? ?? ?? 48 8B D0 48 8D 4D F0 E8 ?? ?? ?? ?? EB 6C")]
     // private readonly delegate* unmanaged<PronounModule*, Utf8String*, Utf8String*> _step1;
 
-    [Signature("E8 ?? ?? ?? ?? 0F B7 7F 08")]
+    [Signature("E8 ?? ?? ?? ?? 0F B7 7F 08 48 8B CE")]
     private readonly delegate* unmanaged<PronounModule*, Utf8String*, byte, Utf8String*> _step2;
 
     [Signature("E8 ?? ?? ?? ?? 49 8B 45 00 49 8B CD FF 50 68")]
@@ -59,7 +59,7 @@ internal unsafe class GameFunctions : IDisposable {
     private delegate byte ShouldDoNameLookupDelegate(IntPtr agent);
 
     [Signature(
-        "E8 ?? ?? ?? ?? 84 C0 75 1A 8B 93",
+        "48 89 5C 24 ?? 57 48 83 EC 20 48 8B D9 40 32 FF 48 8B 49 10",
         DetourName = nameof(ShouldDoNameLookupDetour)
     )]
     private Hook<ShouldDoNameLookupDelegate> ShouldDoNameLookupHook { get; init; }
@@ -67,7 +67,7 @@ internal unsafe class GameFunctions : IDisposable {
     private delegate ulong GetChatColourDelegate(IntPtr a1, int a2);
 
     [Signature(
-        "E8 ?? ?? ?? ?? 48 8B 4B 10 B2 01 89 83",
+        "E8 ?? ?? ?? ?? 39 83 ?? ?? ?? ?? 0F 84 ?? ?? ?? ?? 66 66 0F 1F 84 00",
         DetourName = nameof(GetChatColourDetour)
     )]
     private Hook<GetChatColourDelegate> GetChatColourHook { get; init; }
