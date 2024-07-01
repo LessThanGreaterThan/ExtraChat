@@ -7,6 +7,7 @@ using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Client.UI.Shell;
@@ -115,7 +116,7 @@ internal unsafe class GameFunctions : IDisposable {
             return input;
         }
 
-        var module = Framework.Instance()->GetUiModule()->GetPronounModule();
+        var module = UIModule.Instance()->GetPronounModule();
         var memorySpace = IMemorySpace.GetDefaultSpace();
         var str = memorySpace->Create<Utf8String>();
 
@@ -223,8 +224,8 @@ internal unsafe class GameFunctions : IDisposable {
 
     private void UpdateChat() {
         this._shouldForceNameLookup = true;
-        var agent = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.ChatLog);
-        var update = (delegate* unmanaged<AgentInterface*, void>) ((void**) agent->VTable)[6];
+        var agent = UIModule.Instance()->GetAgentModule()->GetAgentByInternalId(AgentId.ChatLog);
+        var update = (delegate* unmanaged<AgentInterface*, void>) ((void**) agent->VirtualTable)[6];
         update(agent);
     }
 

@@ -2,14 +2,16 @@
 using Dalamud.ContextMenu;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Game.Text;
-using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using ExtraChat.Integrations;
 using ExtraChat.Ui;
 using ExtraChat.Util;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace ExtraChat;
 
@@ -23,13 +25,16 @@ public class Plugin : IDalamudPlugin {
     internal static IPluginLog Log { get; private set; }
 
     [PluginService]
-    internal DalamudPluginInterface Interface { get; init; }
+    internal IDalamudPluginInterface Interface { get; init; }
 
     [PluginService]
     internal IClientState ClientState { get; init; }
 
     [PluginService]
     internal ICommandManager CommandManager { get; init; }
+
+    [PluginService]
+    internal IContextMenu ContextMenu { get; init; }
 
     [PluginService]
     internal IChatGui ChatGui { get; init; }
@@ -42,6 +47,9 @@ public class Plugin : IDalamudPlugin {
 
     [PluginService]
     internal IGameGui GameGui { get; init; }
+
+    [PluginService]
+    internal INotificationManager NotificationManager { get; init; }
 
     [PluginService]
     internal IObjectTable ObjectTable { get; init; }
@@ -60,15 +68,14 @@ public class Plugin : IDalamudPlugin {
     internal Client Client { get; }
     internal Commands Commands { get; }
     internal PluginUi PluginUi { get; }
-    internal DalamudContextMenu ContextMenu { get; }
     internal GameFunctions GameFunctions { get; }
     internal Ipc Ipc { get; }
     private IDisposable[] Integrations { get; }
 
-    private PlayerCharacter? _localPlayer;
+    private IPlayerCharacter? _localPlayer;
     private readonly Mutex _localPlayerLock = new();
 
-    internal PlayerCharacter? LocalPlayer {
+    internal IPlayerCharacter? LocalPlayer {
         get {
             this._localPlayerLock.WaitOne();
             var player = this._localPlayer;
@@ -85,7 +92,6 @@ public class Plugin : IDalamudPlugin {
     public Plugin() {
         SodiumInit.Init();
         WorldUtil.Initialise(this.DataManager!);
-        this.ContextMenu = new DalamudContextMenu(this.Interface);
         this.Config = this.Interface!.GetPluginConfig() as Configuration ?? new Configuration();
         this.Client = new Client(this);
         this.Commands = new Commands(this);
@@ -98,13 +104,13 @@ public class Plugin : IDalamudPlugin {
         };
 
         this.Framework!.Update += this.FrameworkUpdate;
-        this.ContextMenu.OnOpenGameObjectContextMenu += this.OnOpenGameObjectContextMenu;
+        this.ContextMenu!.OnMenuOpened += this.OnMenuOpened;
     }
 
     public void Dispose() {
         this.GameFunctions.ResetOverride();
 
-        this.ContextMenu.OnOpenGameObjectContextMenu -= this.OnOpenGameObjectContextMenu;
+        this.ContextMenu.OnMenuOpened -= this.OnMenuOpened;
         this.Framework.Update -= this.FrameworkUpdate;
         this._localPlayerLock.Dispose();
 
@@ -117,7 +123,6 @@ public class Plugin : IDalamudPlugin {
         this.PluginUi.Dispose();
         this.Commands.Dispose();
         this.Client.Dispose();
-        this.ContextMenu.Dispose();
     }
 
     private void FrameworkUpdate(IFramework framework) {
@@ -126,6 +131,12 @@ public class Plugin : IDalamudPlugin {
         } else if (!this.ClientState.IsLoggedIn) {
             // only set to null if not logged in
             this.LocalPlayer = null;
+        }
+    }
+
+    private void OnMenuOpened(IMenuOpenedArgs args) {
+        foreach (var thing in args.EventInterfaces) {
+            Plugin.Log.Info($"{thing:X}");
         }
     }
 
@@ -155,7 +166,7 @@ public class Plugin : IDalamudPlugin {
 
     private void ObjectContext(GameObjectContextMenuOpenArgs args) {
         var obj = this.ObjectTable.SearchById(args.ObjectId);
-        if (obj is not PlayerCharacter chara) {
+        if (obj is not IPlayerCharacter chara) {
             return;
         }
 
@@ -173,7 +184,11 @@ public class Plugin : IDalamudPlugin {
         if (this.Config.UseNativeToasts) {
             this.ToastGui.ShowNormal(message);
         } else {
-            this.Interface.UiBuilder.AddNotification(message, Name, NotificationType.Info);
+            this.NotificationManager.AddNotification(new Notification {
+                Type = NotificationType.Info,
+                Title = Name,
+                Content = message,
+            });
         }
 
         this.ChatGui.Print(new XivChatEntry {
@@ -186,7 +201,11 @@ public class Plugin : IDalamudPlugin {
         if (this.Config.UseNativeToasts) {
             this.ToastGui.ShowError(message);
         } else {
-            this.Interface.UiBuilder.AddNotification(message, Name, NotificationType.Error);
+            this.NotificationManager.AddNotification(new Notification {
+                Type = NotificationType.Error,
+                Title = Name,
+                Content = message,
+            });
         }
 
         this.ChatGui.Print(new XivChatEntry {
