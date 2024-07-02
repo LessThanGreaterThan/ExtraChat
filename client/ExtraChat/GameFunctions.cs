@@ -62,16 +62,6 @@ internal unsafe class GameFunctions : IDisposable {
     )]
     private Hook<ShouldDoNameLookupDelegate> ShouldDoNameLookupHook { get; init; }
 
-    [Signature(
-        "89 BB ?? ?? ?? ?? E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 89 BD",
-        ScanType = ScanType.Text,
-        Offset = 2
-    )]
-    private int _agentChatColourOffset;
-
-    [Signature("89 BB ?? ?? ?? ?? E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 89 BD", ScanType = ScanType.Text, Offset = 0)]
-    private nint _agentChatColourInstruction;
-
     [Obsolete("Use OverrideChannel")]
     private Guid _overrideChannel = Guid.Empty;
 
