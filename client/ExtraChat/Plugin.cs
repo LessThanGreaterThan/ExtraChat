@@ -1,9 +1,9 @@
 ﻿using ASodium;
-using Dalamud.ContextMenu;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.IoC;
 using Dalamud.Plugin;
@@ -99,9 +99,9 @@ public class Plugin : IDalamudPlugin {
         this.GameFunctions = new GameFunctions(this);
         this.Ipc = new Ipc(this);
 
-        this.Integrations = new IDisposable[] {
+        this.Integrations = [
             new ChatTwo(this),
-        };
+        ];
 
         this.Framework!.Update += this.FrameworkUpdate;
         this.ContextMenu!.OnMenuOpened += this.OnMenuOpened;
@@ -134,46 +134,48 @@ public class Plugin : IDalamudPlugin {
         }
     }
 
-    private void OnMenuOpened(IMenuOpenedArgs args) {
-        foreach (var thing in args.EventInterfaces) {
-            Plugin.Log.Info($"{thing:X}");
+    private unsafe void OnMenuOpened(IMenuOpenedArgs args) {
+        var ctx = AgentContext.Instance();
+        if (args.AgentPtr != (nint) ctx) {
+            return;
         }
+
+        if (ctx->TargetObjectId.ObjectId != 0xE000_0000) {
+            this.ObjectContext(args, ctx->TargetObjectId.ObjectId);
+            return;
+        }
+
+        var world = ctx->TargetHomeWorldId;
+        if (world == 0) {
+            return;
+        }
+
+        var name = SeString.Parse(ctx->TargetName.AsSpan()).TextValue;
+        if (string.IsNullOrWhiteSpace(name)) {
+            return;
+        }
+
+        args.AddMenuItem(new MenuItem {
+            Name = "Invite to ExtraChat Linkshell",
+            OnClicked = _ => {
+                this.PluginUi.InviteInfo = (name, (ushort) world);
+            },
+        });
     }
 
-    private void OnOpenGameObjectContextMenu(GameObjectContextMenuOpenArgs args) {
-        if (!this.Config.ShowContextMenuItem) {
-            return;
-        }
-
-        if (args.ObjectId != 0xE0000000) {
-            this.ObjectContext(args);
-            return;
-        }
-
-        if (args.ObjectWorld == 0) {
-            return;
-        }
-
-        var name = args.Text?.TextValue;
-        if (name == null) {
-            return;
-        }
-
-        args.AddCustomItem(new GameObjectContextMenuItem("Invite to ExtraChat Linkshell", _ => {
-            this.PluginUi.InviteInfo = (name, args.ObjectWorld);
-        }));
-    }
-
-    private void ObjectContext(GameObjectContextMenuOpenArgs args) {
-        var obj = this.ObjectTable.SearchById(args.ObjectId);
+    private void ObjectContext(IMenuOpenedArgs args, uint objectId) {
+        var obj = this.ObjectTable.SearchById(objectId);
         if (obj is not IPlayerCharacter chara) {
             return;
         }
 
-        args.AddCustomItem(new GameObjectContextMenuItem("Invite to ExtraChat Linkshell", _ => {
-            var name = chara.Name.TextValue;
-            this.PluginUi.InviteInfo = (name, (ushort) chara.HomeWorld.Id);
-        }));
+        args.AddMenuItem(new MenuItem {
+            Name = "Invite to ExtraChat Linkshell",
+            OnClicked = _ => {
+                var name = chara.Name.TextValue;
+                this.PluginUi.InviteInfo = (name, (ushort) chara.HomeWorld.Id);
+            },
+        });
     }
 
     internal void SaveConfig() {

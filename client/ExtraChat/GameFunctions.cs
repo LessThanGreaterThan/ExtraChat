@@ -4,15 +4,12 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Hooking;
 using Dalamud.Memory;
 using Dalamud.Utility.Signatures;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Client.UI.Shell;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
 
 namespace ExtraChat;
 
@@ -31,9 +28,9 @@ internal unsafe class GameFunctions : IDisposable {
     private readonly delegate* unmanaged<PronounModule*, Utf8String*, byte, Utf8String*> _step2;
 
     [Signature("E8 ?? ?? ?? ?? 49 8B 45 00 49 8B CD FF 50 68")]
-    private readonly delegate* unmanaged<RaptureShellModule*, uint, void> _setChatChannel;
+    private readonly delegate* unmanaged<RaptureShellModule*, int, uint, nint, byte, nint> _setChatChannel;
 
-    private delegate void SendMessageDelegate(IntPtr a1, Utf8String* message, IntPtr a3);
+    private delegate void SendMessageDelegate(nint a1, Utf8String* message, nint a3);
 
     private delegate void SetChatChannelDelegate(RaptureShellModule* module, uint channel);
 
@@ -44,12 +41,12 @@ internal unsafe class GameFunctions : IDisposable {
     private Hook<SendMessageDelegate> SendMessageHook { get; init; }
 
     [Signature(
-        "E8 ?? ?? ?? ?? 49 8B 45 00 49 8B CD FF 50 68",
+        "E8 ?? ?? ?? ?? 33 C0 EB 1B",
         DetourName = nameof(SetChatChannelDetour)
     )]
     private Hook<SetChatChannelDelegate> SetChatChannelHook { get; init; }
 
-    private delegate IntPtr ChangeChannelNameDelegate(IntPtr agent);
+    private delegate nint ChangeChannelNameDelegate(nint agent);
 
     [Signature(
         "E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 4D B0 48 8B F8 E8 ?? ?? ?? ?? 41 8B D6",
@@ -57,7 +54,7 @@ internal unsafe class GameFunctions : IDisposable {
     )]
     private Hook<ChangeChannelNameDelegate> ChangeChannelNameHook { get; init; }
 
-    private delegate byte ShouldDoNameLookupDelegate(IntPtr agent);
+    private delegate byte ShouldDoNameLookupDelegate(nint agent);
 
     [Signature(
         "48 89 5C 24 ?? 57 48 83 EC 20 48 8B D9 40 32 FF 48 8B 49 10",
@@ -65,13 +62,15 @@ internal unsafe class GameFunctions : IDisposable {
     )]
     private Hook<ShouldDoNameLookupDelegate> ShouldDoNameLookupHook { get; init; }
 
-    private delegate ulong GetChatColourDelegate(IntPtr a1, int a2);
-
     [Signature(
-        "E8 ?? ?? ?? ?? 39 83 ?? ?? ?? ?? 0F 84 ?? ?? ?? ?? 66 66 0F 1F 84 00",
-        DetourName = nameof(GetChatColourDetour)
+        "89 BB ?? ?? ?? ?? E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 89 BD",
+        ScanType = ScanType.Text,
+        Offset = 2
     )]
-    private Hook<GetChatColourDelegate> GetChatColourHook { get; init; }
+    private int _agentChatColourOffset;
+
+    [Signature("89 BB ?? ?? ?? ?? E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 89 BD", ScanType = ScanType.Text, Offset = 0)]
+    private nint _agentChatColourInstruction;
 
     [Obsolete("Use OverrideChannel")]
     private Guid _overrideChannel = Guid.Empty;
@@ -96,11 +95,9 @@ internal unsafe class GameFunctions : IDisposable {
         this.SetChatChannelHook!.Enable();
         this.ChangeChannelNameHook!.Enable();
         this.ShouldDoNameLookupHook!.Enable();
-        this.GetChatColourHook!.Enable();
     }
 
     public void Dispose() {
-        this.GetChatColourHook.Dispose();
         this.ShouldDoNameLookupHook.Dispose();
         this.ChangeChannelNameHook.Dispose();
         this.SetChatChannelHook.Dispose();
@@ -152,7 +149,7 @@ internal unsafe class GameFunctions : IDisposable {
         return list.ToArray();
     }
 
-    private void SendMessageDetour(IntPtr a1, Utf8String* message, IntPtr a3) {
+    private void SendMessageDetour(nint a1, Utf8String* message, nint a3) {
         try {
             if (this.SendMessageDetourInner(message)) {
                 this.SendMessageHook.Original(a1, message, a3);
@@ -191,7 +188,7 @@ internal unsafe class GameFunctions : IDisposable {
             }
 
             if (this.Plugin.Commands.Registered.TryGetValue(command, out var id)) {
-                var entireMessage = MemoryHelper.ReadRawNullTerminated((IntPtr) message->StringPtr);
+                var entireMessage = MemoryHelper.ReadRawNullTerminated((nint) message->StringPtr);
                 sendTo = id;
                 if (entireMessage.Length - 1 >= i && char.IsWhiteSpace((char) entireMessage[i])) {
                     i += 1;
@@ -211,7 +208,7 @@ internal unsafe class GameFunctions : IDisposable {
             return true;
         }
 
-        toSend ??= MemoryHelper.ReadRawNullTerminated((IntPtr) message->StringPtr);
+        toSend ??= MemoryHelper.ReadRawNullTerminated((nint) message->StringPtr);
 
         if (toSend.Length == 0 || toSend.All(c => char.IsWhiteSpace((char) c))) {
             // don't send blank messages even to the original handler
@@ -225,8 +222,7 @@ internal unsafe class GameFunctions : IDisposable {
     private void UpdateChat() {
         this._shouldForceNameLookup = true;
         var agent = UIModule.Instance()->GetAgentModule()->GetAgentByInternalId(AgentId.ChatLog);
-        var update = (delegate* unmanaged<AgentInterface*, void>) ((void**) agent->VirtualTable)[6];
-        update(agent);
+        agent->VirtualTable->Update(agent, 0);
     }
 
     private void SetChatChannelDetour(RaptureShellModule* module, uint channel) {
@@ -238,7 +234,7 @@ internal unsafe class GameFunctions : IDisposable {
         this.SetChatChannelHook.Original(module, channel);
     }
 
-    private IntPtr ChangeChannelNameDetour(IntPtr agent) {
+    private nint ChangeChannelNameDetour(nint agent) {
         var ret = this.ChangeChannelNameHook.Original(agent);
 
         if (this.OverrideChannel == Guid.Empty) {
@@ -251,30 +247,15 @@ internal unsafe class GameFunctions : IDisposable {
             chatChannel->SetString(bytesPtr);
         }
 
-        return (IntPtr) chatChannel->StringPtr;
+        return (nint) chatChannel->StringPtr;
     }
 
-    private byte ShouldDoNameLookupDetour(IntPtr agent) {
+    private byte ShouldDoNameLookupDetour(nint agent) {
         if (this._shouldForceNameLookup) {
             this._shouldForceNameLookup = false;
             return 1;
         }
 
         return this.ShouldDoNameLookupHook.Original(agent);
-    }
-
-    private ulong GetChatColourDetour(IntPtr a1, int a2) {
-        try {
-            if (this.OverrideChannel != Guid.Empty) {
-                var ui = this.Plugin.ConfigInfo.GetUiColour(this.OverrideChannel);
-                if (this.Plugin.DataManager.GetExcelSheet<UIColor>()?.GetRow(ui)?.UIForeground is { } colour) {
-                    return colour >> 8;
-                }
-            }
-        } catch (Exception ex) {
-            Plugin.Log.Error(ex, "Error in get chat colour detour");
-        }
-
-        return this.GetChatColourHook.Original(a1, a2);
     }
 }

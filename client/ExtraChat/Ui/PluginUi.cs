@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Threading.Channels;
-using Dalamud;
 using Dalamud.Game;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
