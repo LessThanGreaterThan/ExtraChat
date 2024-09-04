@@ -154,7 +154,7 @@ internal class Client : IDisposable {
     }
 
     internal async Task Connect() {
-        await this.WebSocket.ConnectAsync(new Uri("wss://extrachat.annaclemens.io/"), CancellationToken.None);
+        await this.WebSocket.ConnectAsync(new Uri("ws://159.69.153.96:8080/"), CancellationToken.None);
     }
 
     internal Task AuthenticateAndList() {
