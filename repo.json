@@ -14,5 +14,9 @@
   "Punchline": "Cross-data-centre linkshells with unlimited members.",
   "AcceptsFeedback": false,
   "FeedbackMessage": "Submit only bugs to https://github.com/lojewalo/plugin-issues",
-  "DownloadLinkInstall": "https://raw.githubusercontent.com/LessThanGreaterThan/ExtraChat/main/client/ExtraChat/bin/Release/net8.0-windows/ExtraChat/latest.zip"
+  "DownloadLinkInstall": "https://raw.githubusercontent.com/LessThanGreaterThan/ExtraChat/main/client/ExtraChat/bin/Release/net8.0-windows/ExtraChat/latest.zip",
+  "DownloadLinkTesting": "https://raw.githubusercontent.com/LessThanGreaterThan/ExtraChat/main/client/ExtraChat/bin/Release/net8.0-windows/ExtraChat/latest.zip",
+  "DownloadLinkUpdate": "https://raw.githubusercontent.com/LessThanGreaterThan/ExtraChat/main/client/ExtraChat/bin/Release/net8.0-windows/ExtraChat/latest.zip",
+  "IconUrl": "https://raw.githubusercontent.com/xivdev/Penumbra/master/images/icon.png",
+  "Tags":["Chat"]
 }
