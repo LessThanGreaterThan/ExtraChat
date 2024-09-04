@@ -1,0 +1,18 @@
+{
+  "Author": "Anna",
+  "Name": "ExtraChat",
+  "InternalName": "ExtraChat",
+  "AssemblyVersion": "1.3.6.0",
+  "Description": "ExtraChat adds end-to-end encrypted, cross-data-centre, unlimited linkshells\nto the game.",
+  "ApplicableVersion": "any",
+  "RepoUrl": "https://git.anna.lgbt/anna/ExtraChat",
+  "DalamudApiLevel": 10,
+  "LoadRequiredState": 0,
+  "LoadSync": false,
+  "CanUnloadAsync": false,
+  "LoadPriority": 0,
+  "Punchline": "Cross-data-centre linkshells with unlimited members.",
+  "AcceptsFeedback": false,
+  "FeedbackMessage": "Submit only bugs to https://github.com/lojewalo/plugin-issues",
+  "DownloadLinkInstall": "https://raw.githubusercontent.com/LessThanGreaterThan/ExtraChat/main/client/ExtraChat/bin/Release/net8.0-windows/ExtraChat/latest.zip"
+}
